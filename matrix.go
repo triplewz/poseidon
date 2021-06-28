@@ -225,7 +225,7 @@ func transpose(m Matrix) Matrix {
 	return res
 }
 
-// square matrix is a t*t matrix.
+// the square matrix is a t*t matrix.
 func IsSquareMatrix(m Matrix) bool {
 	return row(m) == column(m)
 }

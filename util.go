@@ -5,7 +5,7 @@ import (
 	"math/big"
 )
 
-//hexToElement converts hex-strings to finite field elements
+// hexToElement converts hex-strings to finite field elements
 func hexToElement(hex []string) []*ff.Element {
 	elementArray := make([]*ff.Element, len(hex))
 
@@ -17,7 +17,7 @@ func hexToElement(hex []string) []*ff.Element {
 	return elementArray
 }
 
-//bigToElement converts big integers to finite field elements
+// bigToElement converts big integers to finite field elements
 func bigToElement(big []*big.Int) []*ff.Element {
 	elementArray := make([]*ff.Element, len(big))
 
@@ -29,7 +29,7 @@ func bigToElement(big []*big.Int) []*ff.Element {
 	return elementArray
 }
 
-//hexToBig converts hex-strings to big  integers
+// hexToBig converts hex-strings to big  integers
 func hexToBig(hex []string) []*big.Int {
 	bigArray := make([]*big.Int, len(hex))
 

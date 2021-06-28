@@ -3,7 +3,7 @@
 
 This is the GO implementation of poseidon hash. We refer the paper https://eprint.iacr.org/2019/458.pdf and [the rust implementation](https://github.com/filecoin-project/neptune).
 Poseidon hash is a kind of hash function used for proof systems, such as ZK-STARKs, Bulletproof, so it is also called " zero-knowledge friendly hash". It has been widely used in blockchain for zero-knowledge proofs.
-You can find more information the paper.
+You can find more information in the paper.
 
 # Install
 `install`:
@@ -22,10 +22,13 @@ go test -v --bench=.
 
 ```go
 func main() {
-	// generate round constants for poseidon hash.
-	cons, _ := GenPoseidonConstants(4)
 	// poseidon hash with 3 input elements and 1 output element.
-	input := []*big.Int{big.NewInt(1), big.NewInt(2), big.NewInt(3)}
+    input := []*big.Int{big.NewInt(1), big.NewInt(2), big.NewInt(3)}
+
+	// generate round constants for poseidon hash.
+	// width=len(input)+1.
+	cons, _ := GenPoseidonConstants(4)
+
 	// use OptimizedStatic hash mode.
 	h1, _ := Hash(input, cons, OptimizedStatic)
 	// use OptimizedDynamic hash mode.
@@ -38,14 +41,14 @@ func main() {
 CPU: i5-9400 CPU @ 2.90GHz.\
 OS: win10\
 go version: 16.3\
-input: 10 elements, output: 1 elements
+input: 10 elements, output: 1 element
 
 ```
 BenchmarkOptimizedStaticWith10Inputs-6    	   13419	     89416 ns/op
 BenchmarkOptimizedDynamicWith10Inputs-6   	    4693	    251820 ns/op
 BenchmarkCorrectWith10Inputs-6            	    5006	    236506 ns/op
 ```
-# Other implementation
+# Other implementations
 - [filecoin-project/neptune](https://github.com/filecoin-project/neptune) (rust)
 - [iden3/go-iden3-crypto](https://github.com/iden3/go-iden3-crypto) (go)
 - [guipublic/poseidon](https://github.com/guipublic/poseidon) (c)

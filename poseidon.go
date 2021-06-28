@@ -17,7 +17,7 @@ type PoseidonConst struct {
 	PartialRounds  int
 }
 
-// provide three hash mode.
+// provide three hash modes.
 type HashMode int
 
 const (
@@ -184,7 +184,7 @@ func correctHash(state []*ff.Element, pdsConsts *PoseidonConst) (*big.Int, error
 	return h, nil
 }
 
-// addRoundConsts add round constants to the input.
+// addRoundConsts adds round constants to the input.
 func addRoundConsts(state []*ff.Element, RoundConsts []*ff.Element) []*ff.Element {
 	for i := 0; i < len(state); i++ {
 		state[i].Add(state[i], RoundConsts[i])
