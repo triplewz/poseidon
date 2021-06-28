@@ -1,11 +1,11 @@
-#Poseidon Hash
+# Poseidon Hash
 [![Build Status](https://travis-ci.com/triplewz/poseidon.svg?branch=master)](https://travis-ci.com/triplewz/poseidon)
 
 This is the GO implementation of poseidon hash. We refer the paper https://eprint.iacr.org/2019/458.pdf and [the rust implementation](https://github.com/filecoin-project/neptune).
 Poseidon hash is a kind of hash function used for proof systems, such as ZK-STARKs, Bulletproof, so it is also called " zero-knowledge friendly hash". It has been widely used in blockchain for zero-knowledge proofs.
 You can find more information the paper.
 
-#Install
+# Install
 `install`:
 ```bigquery
 go get -u github.com/triplewz/poseidon
@@ -18,7 +18,7 @@ go test -v
 ```bigquery
 go test -v --bench=. 
 ```
-#Example
+# Example
 
 ```go
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	h3, _ := Hash(input, cons, Correct)
 }
 ```
-#Benchmark
+# Benchmark
 CPU: i5-9400 CPU @ 2.90GHz.\
 OS: win10\
 go version: 16.3\
@@ -45,7 +45,7 @@ BenchmarkOptimizedStaticWith10Inputs-6    	   13419	     89416 ns/op
 BenchmarkOptimizedDynamicWith10Inputs-6   	    4693	    251820 ns/op
 BenchmarkCorrectWith10Inputs-6            	    5006	    236506 ns/op
 ```
-#Other implementation
+# Other implementation
 - [filecoin-project/neptune](https://github.com/filecoin-project/neptune) (rust)
 - [iden3/go-iden3-crypto](https://github.com/iden3/go-iden3-crypto) (go)
 - [guipublic/poseidon](https://github.com/guipublic/poseidon) (c)
@@ -56,5 +56,5 @@ BenchmarkCorrectWith10Inputs-6            	    5006	    236506 ns/op
 - [arnaucube/poseidon-rs](https://github.com/arnaucube/poseidon-rs) (rust)
 - [krypto/hadeshash](https://extgit.iaik.tugraz.at/krypto/hadeshash) (sage)
 
-#License
+# License
 BSD license.
