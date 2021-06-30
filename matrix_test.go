@@ -1,6 +1,7 @@
 package poseidon
 
 import (
+	"github.com/stretchr/testify/assert"
 	ff "github.com/triplewz/poseidon/bls12_381"
 	"testing"
 )
@@ -29,15 +30,8 @@ func TestVector(t *testing.T) {
 
 	for _, cases := range sub {
 		get, err := VecSub(cases.v1, cases.v2)
-		if err != nil {
-			t.Errorf("vec sub failed, err: %s", err)
-			return
-		}
-
-		if !IsVecEqual(get, cases.want) {
-			t.Errorf("invalid vec sub, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get,cases.want)
 	}
 
 	add := []struct {
@@ -51,15 +45,8 @@ func TestVector(t *testing.T) {
 
 	for _, cases := range add {
 		get, err := VecAdd(cases.v1, cases.v2)
-		if err != nil {
-			t.Errorf("vec add failed, err: %s", err)
-			return
-		}
-
-		if !IsVecEqual(get, cases.want) {
-			t.Errorf("invalid vec add, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 
 	scalarmul := []struct {
@@ -74,11 +61,7 @@ func TestVector(t *testing.T) {
 
 	for _, cases := range scalarmul {
 		get := ScalarVecMul(cases.scalar, cases.v)
-
-		if !IsVecEqual(get, cases.want) {
-			t.Errorf("invalid vec add, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, get, cases.want)
 	}
 
 	vecmul := []struct {
@@ -92,15 +75,8 @@ func TestVector(t *testing.T) {
 
 	for _, cases := range vecmul {
 		get, err := VecMul(cases.v1, cases.v2)
-		if err != nil {
-			t.Errorf("vec mul failed, err: %s", err)
-			return
-		}
-
-		if get.Cmp(cases.want) != 0 {
-			t.Errorf("invalid vec mul, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -117,22 +93,14 @@ func TestMatrixScalarMul(t *testing.T) {
 
 	for _, cases := range scalarmul {
 		get := ScalarMul(cases.scalar, cases.m)
-
-		if !IsEqual(get, cases.want) {
-			t.Errorf("scalar mul err, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, get, cases.want)
 	}
 }
 
 func TestIdentity(t *testing.T) {
 	get := MakeIdentity(3)
-
 	want := Matrix{{one, zero, zero}, {zero, one, zero}, {zero, zero, one}}
-
-	if !IsEqual(get, want) {
-		t.Errorf("make identity matrix err: get %v, want: %v", get, want)
-	}
+	assert.Equal(t, get, want)
 }
 
 func TestMinor(t *testing.T) {
@@ -155,14 +123,8 @@ func TestMinor(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get, err := minor(m, cases.i, cases.j)
-		if err != nil {
-			t.Errorf("minor err: %s", err)
-			return
-		}
-		if !IsEqual(get, cases.want) {
-			t.Errorf("invalid minor, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -183,10 +145,7 @@ func TestCopyMatrix(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get := copyMatrixRows(m, cases.start, cases.end)
-		if !IsEqual(get, cases.want) {
-			t.Errorf("copy matrix err, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -200,11 +159,7 @@ func TestTranspose(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get := transpose(cases.input)
-
-		if !IsEqual(get, cases.want) {
-			t.Errorf("transpose err, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -222,18 +177,9 @@ func TestUpperTriangular(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		m, _, err := upperTriangular(cases.m, cases.s)
-		if err != nil {
-			t.Errorf("upper triangular err: %s", err)
-			return
-		}
-
+		assert.Equal(t, err,nil)
 		get := isUpperTriangular(m)
-
-		if get != cases.want {
-			t.Errorf("make upper triangular failed, get: %v, want: %v", get, cases.want)
-			return
-		}
-
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -254,11 +200,7 @@ func TestFindNonZero(t *testing.T) {
 
 	for _, cases := range vectorSet {
 		get := isFirstKZero(cases.v, cases.k)
-
-		if get != cases.want {
-			t.Errorf("failed to find first k-zero elements, k:%d, get: %v, want: %v", cases.k, get, cases.want)
-			return
-		}
+		assert.Equal(t, get, cases.want)
 	}
 
 	nonzeroSet := []struct {
@@ -297,10 +239,7 @@ func TestFindNonZero(t *testing.T) {
 
 	for _, cases := range nonzeroSet {
 		gete, geti, err := findNonZero(cases.m, cases.c)
-		if err != nil {
-			t.Errorf("findNonZero err: %s", err)
-			return
-		}
+		assert.Equal(t, err,nil)
 		if gete != nil && cases.want.e != nil {
 			if gete.Cmp(cases.want.e) != 0 || geti != cases.want.index {
 				t.Errorf("find non zero failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
@@ -349,14 +288,8 @@ func TestMatMul(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get, err := MatMul(cases.m1, cases.m2)
-		if err != nil {
-			t.Errorf("matrix multiplication failed,err: %s", err)
-			return
-		}
-
-		if !IsEqual(get, cases.want) {
-			t.Errorf("matrix multiplication err, get: %v, want: %v", get, cases.want)
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 
 	// [[1,2,3],[4,5,6],[7,8,9]]*[1,1,1]
@@ -376,15 +309,8 @@ func TestMatMul(t *testing.T) {
 
 	for _, cases := range testLeftMul {
 		get, err := LeftMatMul(cases.m, cases.v)
-		if err != nil {
-			t.Errorf("left matrix multyplicatiopn failed, err: %s", err)
-			return
-		}
-
-		if !IsVecEqual(get, cases.want) {
-			t.Errorf("left matrix multyplicatiopn err, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 
 	// [1,1,1]*[[1,2,3],[4,5,6],[7,8,9]]
@@ -403,15 +329,8 @@ func TestMatMul(t *testing.T) {
 
 	for _, cases := range testRightMul {
 		get, err := RightMatMul(cases.v, cases.m)
-		if err != nil {
-			t.Errorf("right matrix multyplicatiopn failed, err: %s", err)
-			return
-		}
-
-		if !IsVecEqual(get, cases.want) {
-			t.Errorf("right matrix multyplicatiopn err, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -450,15 +369,8 @@ func TestEliminate(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get, _, err := eliminate(m, shadow, cases.c)
-		if err != nil {
-			t.Errorf("matrix eliminate failed, err: %s", err)
-			return
-		}
-
-		if !IsEqual(get, cases.want) {
-			t.Errorf("matrix eliminate err, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -492,15 +404,8 @@ func TestReduceToIdentity(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		_, get, err := reduceToIdentity(cases.m, shadow)
-		if err != nil {
-			t.Errorf("reduce to identity failed, err: %s", err)
-			return
-		}
-
-		if !IsEqual(get, cases.want) {
-			t.Errorf("reduce err, get:%v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -517,10 +422,7 @@ func TestIsInvertible(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get := IsInvertible(cases.m)
-		if get != cases.want {
-			t.Errorf("invert failed, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, get, cases.want)
 	}
 }
 
@@ -576,20 +478,12 @@ func TestInvert(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		res, _ := MatMul(cases.m, cases.want)
-
 		if !IsIdentity(res) {
 			t.Error("test cases err")
 		}
 
 		get, err := Invert(cases.m)
-		if err != nil {
-			t.Errorf("invert failed, err: %s", err)
-			return
-		}
-
-		if !IsEqual(get, cases.want) {
-			t.Errorf("invert matrix err, get: %v, want: %v", get, cases.want)
-			return
-		}
+		assert.Equal(t, err,nil)
+		assert.Equal(t, get, cases.want)
 	}
 }

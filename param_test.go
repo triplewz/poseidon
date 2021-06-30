@@ -1,6 +1,7 @@
 package poseidon
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -52,10 +53,8 @@ func TestCalcRoundNum(t *testing.T) {
 
 	for _, cases := range tests {
 		getRf, getRp := calcRoundNumbers(cases.t, cases.s)
-		if getRf != cases.want.rf || getRp != cases.want.rp {
-			t.Errorf("generates round numbers err, get rf: %d, want rf: %d, get rp: %d, want rp: %d", getRf, cases.want.rf, getRp, cases.want.rp)
-			return
-		}
+		assert.Equal(t, getRf, cases.want.rf)
+		assert.Equal(t, getRp, cases.want.rp)
 	}
 }
 
@@ -73,10 +72,7 @@ func TestGenRoundConstants(t *testing.T) {
 
 	for _, cases := range tests {
 		get := genRoundConstants(1, 1, 255, cases.t, cases.rf, cases.rp)
-		if len(get) != cases.want {
-			t.Errorf("generates round constants err, get length: %d, want length: %d", len(get), cases.want)
-			return
-		}
+		assert.Equal(t, len(get), cases.want)
 	}
 }
 
@@ -96,14 +92,9 @@ func TestGenCompressedRoundConstants(t *testing.T) {
 		roundContants := genRoundConstants(1, 1, 255, cases.t, cases.rf, cases.rp)
 		mds, _ := createMDSMatrix(cases.t)
 		comRoundContantsm, err := genCompressedRoundConstants(cases.t, cases.rf, cases.rp, roundContants, mds)
-		if err != nil {
-			t.Errorf("genCompressedRoundConstants err: %s", err)
-			return
-		}
+		assert.Equal(t, err, nil)
 
-		if len(comRoundContantsm) != cases.want {
-			t.Errorf("generate compressed round constants failed, get length: %d, want: %d", len(comRoundContantsm), cases.want)
-		}
+		assert.Equal(t, len(comRoundContantsm), cases.want)
 	}
 }
 

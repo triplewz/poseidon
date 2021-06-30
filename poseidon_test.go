@@ -2,6 +2,7 @@ package poseidon
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	ff "github.com/triplewz/poseidon/bls12_381"
 	"os"
 	"testing"
@@ -18,10 +19,7 @@ func TestPoseidonConstans(t *testing.T) {
 	// security margin: true
 	// alpha: 5
 	f, err := os.Open("./data/poseidon-constants-1-1-255-12-8-57-73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001.txt")
-	if err != nil {
-		t.Errorf("open file failed, err: %s", err)
-		return
-	}
+	assert.Equal(t, err, nil)
 	defer f.Close()
 
 	var strs struct {
@@ -34,19 +32,9 @@ func TestPoseidonConstans(t *testing.T) {
 
 	buf := make([]byte, 256*1024)
 	n, err := f.Read(buf)
-	if err != nil {
-		//if err != io.EOF {
-		//	t.Errorf("read file failed, err", err)
-		//	return
-		//}
-		t.Errorf("read file failed, err: %s", err)
-		return
-	}
+	assert.Equal(t, err, nil)
 	err = json.Unmarshal(buf[:n], &strs)
-	if err != nil {
-		t.Errorf("json unmarshal failed, err: %s", err)
-		return
-	}
+	assert.Equal(t, err, nil)
 
 	// compressed round constants
 	comRoundConstants := hexToElement(strs.CompressedRoundConstants)
@@ -99,10 +87,7 @@ func TestPoseidonConstans(t *testing.T) {
 	}
 
 	compress, _ := genCompressedRoundConstants(12, 8, 57, roundConstants, mds)
-	if !IsVecEqual(compress, comRoundConstants) {
-		t.Error("got wrong compressed round constants!")
-		return
-	}
+	assert.Equal(t, compress, comRoundConstants)
 }
 
 var strs = [][]string{
@@ -125,10 +110,8 @@ func TestPoseidonHash(t *testing.T) {
 		h1, _ := Hash(input, cons, OptimizedStatic)
 		h2, _ := Hash(input, cons, OptimizedDynamic)
 		h3, _ := Hash(input, cons, Correct)
-		if h1.Cmp(h2) != 0 || h2.Cmp(h3) != 0 {
-			t.Error("got wrong hash result!")
-			return
-		}
+		assert.Equal(t, h1, h2)
+		assert.Equal(t, h1, h3)
 	}
 }
 
