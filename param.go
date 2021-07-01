@@ -191,7 +191,7 @@ func genCompressedRoundConstants(width, rf, rp int, roundConstants []*ff.Element
 
 	partialKeys := make([]*ff.Element, rp)
 	roundAcc := make([]*ff.Element, width)
-	preRoundKeys := make([]*ff.Element,width)
+	preRoundKeys := make([]*ff.Element, width)
 	copy(roundAcc, lastPartialRoundKey)
 	for i := 0; i < rp; i++ {
 		inv, err := RightMatMul(roundAcc, mInv)
@@ -200,7 +200,7 @@ func genCompressedRoundConstants(width, rf, rp int, roundConstants []*ff.Element
 		}
 		partialKeys[i] = inv[0]
 		inv[0] = zero
-		copy(preRoundKeys,roundConstants[(lastPartialRound-i-1)*width:(lastPartialRound-i)*width])
+		copy(preRoundKeys, roundConstants[(lastPartialRound-i-1)*width:(lastPartialRound-i)*width])
 		roundAcc, err = VecAdd(preRoundKeys, inv)
 		if err != nil {
 			return nil, errors.Errorf("round accumulated err: %s", err)

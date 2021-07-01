@@ -97,4 +97,3 @@ func TestGenCompressedRoundConstants(t *testing.T) {
 		assert.Equal(t, len(comRoundContantsm), cases.want)
 	}
 }
-
