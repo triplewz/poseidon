@@ -92,7 +92,7 @@ func TestGenCompressedRoundConstants(t *testing.T) {
 		roundContants := genRoundConstants(1, 1, 255, cases.t, cases.rf, cases.rp)
 		mds, _ := createMDSMatrix(cases.t)
 		comRoundContantsm, err := genCompressedRoundConstants(cases.t, cases.rf, cases.rp, roundContants, mds)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 
 		assert.Equal(t, len(comRoundContantsm), cases.want)
 	}

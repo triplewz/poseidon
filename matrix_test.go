@@ -30,7 +30,7 @@ func TestVector(t *testing.T) {
 
 	for _, cases := range sub {
 		get, err := VecSub(cases.v1, cases.v2)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 
@@ -45,7 +45,7 @@ func TestVector(t *testing.T) {
 
 	for _, cases := range add {
 		get, err := VecAdd(cases.v1, cases.v2)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 
@@ -75,7 +75,7 @@ func TestVector(t *testing.T) {
 
 	for _, cases := range vecmul {
 		get, err := VecMul(cases.v1, cases.v2)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 }
@@ -123,7 +123,7 @@ func TestMinor(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get, err := minor(m, cases.i, cases.j)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 }
@@ -177,7 +177,7 @@ func TestUpperTriangular(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		m, _, err := upperTriangular(cases.m, cases.s)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		get := isUpperTriangular(m)
 		assert.Equal(t, get, cases.want)
 	}
@@ -239,7 +239,7 @@ func TestFindNonZero(t *testing.T) {
 
 	for _, cases := range nonzeroSet {
 		gete, geti, err := findNonZero(cases.m, cases.c)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		if gete != nil && cases.want.e != nil {
 			if gete.Cmp(cases.want.e) != 0 || geti != cases.want.index {
 				t.Errorf("find non zero failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
@@ -288,7 +288,7 @@ func TestMatMul(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get, err := MatMul(cases.m1, cases.m2)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 
@@ -309,7 +309,7 @@ func TestMatMul(t *testing.T) {
 
 	for _, cases := range testLeftMul {
 		get, err := LeftMatMul(cases.m, cases.v)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 
@@ -329,7 +329,7 @@ func TestMatMul(t *testing.T) {
 
 	for _, cases := range testRightMul {
 		get, err := RightMatMul(cases.v, cases.m)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 }
@@ -369,7 +369,7 @@ func TestEliminate(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		get, _, err := eliminate(m, shadow, cases.c)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 }
@@ -404,7 +404,7 @@ func TestReduceToIdentity(t *testing.T) {
 
 	for _, cases := range testMatrix {
 		_, get, err := reduceToIdentity(cases.m, shadow)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 }
@@ -483,7 +483,7 @@ func TestInvert(t *testing.T) {
 		}
 
 		get, err := Invert(cases.m)
-		assert.Equal(t, err, nil)
+		assert.NoError(t, err)
 		assert.Equal(t, get, cases.want)
 	}
 }

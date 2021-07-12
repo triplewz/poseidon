@@ -19,7 +19,7 @@ func TestPoseidonConstans(t *testing.T) {
 	// security margin: true
 	// alpha: 5
 	f, err := os.Open("./data/poseidon-constants-1-1-255-12-8-57-73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001.txt")
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	defer f.Close()
 
 	var strs struct {
@@ -32,9 +32,9 @@ func TestPoseidonConstans(t *testing.T) {
 
 	buf := make([]byte, 256*1024)
 	n, err := f.Read(buf)
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	err = json.Unmarshal(buf[:n], &strs)
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 
 	// compressed round constants
 	comRoundConstants := hexToElement(strs.CompressedRoundConstants)
