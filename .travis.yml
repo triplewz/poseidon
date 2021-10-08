@@ -3,6 +3,7 @@ dist: bionic
 arch:
   - amd64
 go:
+  - 1.17.x
   - 1.16.x
   - 1.15.x
   - 1.14.x
