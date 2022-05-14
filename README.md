@@ -1,5 +1,5 @@
 # Poseidon Hash
-[![Build Status](https://travis-ci.com/triplewz/poseidon.svg?branch=master)](https://travis-ci.com/triplewz/poseidon)
+![Go](https://github.com/triplewz/poseidon/workflows/Go/badge.svg?branch=master)
 
 This is the GO implementation of poseidon hash. We refer the paper https://eprint.iacr.org/2019/458.pdf and [the rust implementation](https://github.com/filecoin-project/neptune).
 Poseidon hash is a kind of hash function used for proof systems, such as ZK-STARKs, Bulletproof, so it is also called " zero-knowledge friendly hash". It has been widely used in blockchain for zero-knowledge proofs.
