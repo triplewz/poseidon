@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	ff "github.com/triplewz/poseidon/bls12_381"
 	"math"
+	"math/big"
 )
 
 // security level (in bits)
@@ -75,29 +76,36 @@ func isRoundNumberSecure(t, rf, rp int) bool {
 // appendBits converts a number to the bit slice.
 // For simplicity, we use uint8 1 or 0 to represent a bit.
 func appendBits(bits []byte, n, size int) []byte {
-	for i := 0; i < size; i++ {
-		b := (n & 1)
+	for i := size - 1; i >= 0; i-- {
+		bitmask := 1 << i
+		b := (n & bitmask) >> i
 		bits = append(bits, byte(b))
-		n >>= 1
 	}
 
 	return bits
 }
 
-// genNewBits generates new 80-bits slice.
-func genNewBits(bits []byte) []byte {
+// genNewBits generates new 80-bits slice and returns the newly generated bit.
+func genNewBits(bits []byte) byte {
 	newBit := byte(bits[0] ^ bits[13] ^ bits[23] ^ bits[38] ^ bits[51] ^ bits[62])
 	newBits := append(bits, newBit)
 	copy(bits, newBits[1:])
-	return bits
+	return newBit
 }
 
 // nextByte converts bits to byte.
-func nextByte(bits []byte) byte {
+func nextByte(bits []byte, bitCount int) byte {
 	var b byte
-	for i := 0; i < 8; i++ {
+	for i := 0; i < bitCount; i++ {
+		newBit := genNewBits(bits)
+		for newBit == 0 {
+			genNewBits(bits)
+			newBit = genNewBits(bits)
+		}
+		newBit = genNewBits(bits)
+
 		b <<= 1
-		if bits[i] == 1 {
+		if newBit == 1 {
 			b += 1
 		}
 	}
@@ -105,14 +113,16 @@ func nextByte(bits []byte) byte {
 }
 
 // getBytes generates a random byte slice.
-func getBytes(bits []byte) []byte {
+func getBytes(bits []byte, fieldsize int) []byte {
+	// Only prime fields are supported, and they always have reminder bits.
+	remainderBits := fieldsize % 8
+
 	buf := make([]byte, ff.Bytes)
-	for i := 0; i < ff.Bytes; i++ {
-		buf[i] = nextByte(bits)
-		//regen 8 bits.
-		for i := 0; i < 8; i++ {
-			genNewBits(bits)
-		}
+	buf[0] = nextByte(bits, remainderBits)
+
+	// The first byte is already set.
+	for i := 1; i < ff.Bytes; i++ {
+		buf[i] = nextByte(bits, 8)
 	}
 
 	return buf
@@ -151,13 +161,20 @@ func genRoundConstants(field, sbox int, fieldsize, t, rf, rp int) []*ff.Element 
 	bits = appendBits(bits, (1<<30)-1, 30)
 
 	for i := 0; i < 160; i++ {
-		bits = genNewBits(bits)
+		genNewBits(bits)
 	}
 
 	roundConsts := make([]*ff.Element, numCons)
 	for i := 0; i < numCons; i++ {
-		buf := getBytes(bits)
-		roundConsts[i] = new(ff.Element).SetBytes(buf)
+		for {
+			buf := getBytes(bits, fieldsize)
+			bufBigint := new(big.Int).SetBytes(buf)
+			// Skip all buffers that would result in invalid field elements.
+			if ff.IsValid(bufBigint) {
+				roundConsts[i] = new(ff.Element).SetBytes(buf)
+				break
+			}
+		}
 	}
 
 	return roundConsts

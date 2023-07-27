@@ -39,9 +39,9 @@ var PoseidonExp = new(big.Int).SetUint64(5)
 func Hash(input []*big.Int, pdsContants *PoseidonConst, hash HashMode) (*big.Int, error) {
 	state := bigToElement(input)
 
-	//state[0] = 0,state[1:width] = input
-	zero := new(ff.Element).SetZero()
-	state = append([]*ff.Element{zero}, state...)
+	// Neptune (a Rust implementation of Poseidon) is using domain tag 0x3 by default.
+	domain_tag := new(ff.Element).SetString("3")
+	state = append([]*ff.Element{domain_tag}, state...)
 
 	//pdsContants, err := genPoseidonConstants(t)
 	//if err != nil {

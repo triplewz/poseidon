@@ -59,6 +59,12 @@ func Modulus() *big.Int {
 	return new(big.Int).Set(&_modulus)
 }
 
+// Returns true if the big integer represents a valid field element, i.e. it's smaller
+// than the modulus.
+func IsValid(z *big.Int) bool {
+	return z.Cmp(Modulus()) == -1
+}
+
 // q (modulus)
 var qElement = Element{
 	18446744069414584321,
