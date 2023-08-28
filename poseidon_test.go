@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	ff "github.com/triplewz/poseidon/bls12_381"
+	"math/big"
 	"os"
 	"testing"
 )
@@ -113,6 +114,14 @@ func TestPoseidonHash(t *testing.T) {
 		assert.Equal(t, h1, h2)
 		assert.Equal(t, h1, h3)
 	}
+}
+
+func TestPoseidonHashFixed(t *testing.T) {
+	cons, _ := GenPoseidonConstants(3)
+	input := []*big.Int{big.NewInt(0), big.NewInt(0)}
+	hash, _ := Hash(input, cons, OptimizedStatic)
+	expected, _ := new(big.Int).SetString("48fe0b1331196f6cdb33a7c6e5af61b76fd388e1ef1d3d418be5147f0e4613d4", 16)
+	assert.Equal(t, hash, expected)
 }
 
 func benchmarkStatic(b *testing.B, str []string) {
