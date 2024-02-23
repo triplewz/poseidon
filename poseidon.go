@@ -63,14 +63,16 @@ func Hash[E Element[E]](input []*big.Int, pdsContants *PoseidonConst[E], hash Ha
 }
 
 // generate poseidon constants used in the poseidon hash.
-func GenPoseidonConstants[E Element[E]](width, field, sbox int, mds Matrix[E]) (*PoseidonConst[E], error) {
+func GenPoseidonConstants[E Element[E]](width, field, sbox int, roundRoundsUp bool, mds Matrix[E]) (*PoseidonConst[E], error) {
 	// round numbers.
 	rf, rp := calcRoundNumbers[E](width, true)
 	if rf%2 != 0 {
 		return nil, fmt.Errorf("full rounds should be even")
 	}
 	half := rf / 2
-	rp += rp % width
+	if roundRoundsUp {
+		rp += rp % width
+	}
 
 	constants := genRoundConstants[E](field, sbox, Bits[E](), width, rf, rp)
 
@@ -134,7 +136,7 @@ func optimizedStaticHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].BigInt(h)
+	state[1].ToBigIntRegular(h)
 
 	return h, nil
 }
@@ -159,7 +161,7 @@ func optimizedDynamicHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) 
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].BigInt(h)
+	state[1].ToBigIntRegular(h)
 
 	return h, nil
 }
@@ -184,7 +186,7 @@ func correctHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (*big.Int
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].BigInt(h)
+	state[1].ToBigIntRegular(h)
 
 	return h, nil
 }
@@ -205,7 +207,8 @@ func sbox[E Element[E]](e E, pre, post *E) {
 		e.Add(e, *pre)
 	}
 
-	Exp(e, e, PoseidonExp)
+	x := newElement[E]().Set(e)
+	Exp(e, x, PoseidonExp)
 
 	// if post is not nil, add round constants after computing the sbox.
 	if post != nil && !isNil(*post) {
