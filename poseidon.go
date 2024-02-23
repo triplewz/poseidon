@@ -6,14 +6,14 @@ import (
 )
 
 type PoseidonConst[E Element[E]] struct {
-	Mds            *mdsMatrices[E]
-	RoundConsts    []E
-	ComRoundConts  []E
-	PreSparse      Matrix[E]
-	Sparse         []*SparseMatrix[E]
-	FullRounds     int
-	HalfFullRounds int
-	PartialRounds  int
+	Mds             *mdsMatrices[E]
+	RoundConsts     []E
+	CompRoundConsts []E
+	PreSparse       Matrix[E]
+	Sparse          []*SparseMatrix[E]
+	FullRounds      int
+	HalfFullRounds  int
+	PartialRounds   int
 }
 
 // provide three hash modes.
@@ -98,14 +98,14 @@ func GenPoseidonConstants[E Element[E]](width, field, sbox int, roundRoundsUp bo
 	}
 
 	return &PoseidonConst[E]{
-		Mds:            mdsm,
-		RoundConsts:    constants,
-		ComRoundConts:  compress,
-		PreSparse:      preSparse,
-		Sparse:         sparse,
-		FullRounds:     rf,
-		PartialRounds:  rp,
-		HalfFullRounds: half,
+		Mds:             mdsm,
+		RoundConsts:     constants,
+		CompRoundConsts: compress,
+		PreSparse:       preSparse,
+		Sparse:          sparse,
+		FullRounds:      rf,
+		PartialRounds:   rp,
+		HalfFullRounds:  half,
 	}, nil
 }
 
@@ -113,7 +113,7 @@ func optimizedStaticHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (
 	t := len(state)
 	// The first full round should use the initial constants.
 	for i := 0; i < t; i++ {
-		state[i].Add(state[i], pdsConsts.ComRoundConts[i])
+		state[i].Add(state[i], pdsConsts.CompRoundConsts[i])
 	}
 
 	// do the first half full rounds
@@ -223,7 +223,7 @@ func sbox[E Element[E]](e E, pre, post *E) {
 func staticPartialRounds[E Element[E]](state []E, offset int, pdsConsts *PoseidonConst[E]) []E {
 	// swap the order of the linear layer and the round constant addition,
 	// see https://eprint.iacr.org/2019/458.pdf page 20.
-	sbox(state[0], nil, &pdsConsts.ComRoundConts[offset])
+	sbox(state[0], nil, &pdsConsts.CompRoundConsts[offset])
 
 	state = productSparseMatrix(state, offset-len(state)*(pdsConsts.HalfFullRounds+1), pdsConsts.Sparse)
 	return state
@@ -241,7 +241,7 @@ func staticFullRounds[E Element[E]](state []E, lastRound bool, offset int, pdsCo
 		}
 	} else {
 		for i := 0; i < len(state); i++ {
-			postKey := pdsConsts.ComRoundConts[offset+i]
+			postKey := pdsConsts.CompRoundConsts[offset+i]
 			sbox(state[i], nil, &postKey)
 		}
 	}
