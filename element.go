@@ -12,7 +12,7 @@ type Element[E any] interface {
 	SetBigInt(*big.Int) E
 	SetBytes([]byte) E
 	SetString(string) (E, error)
-	ToBigIntRegular(*big.Int) *big.Int
+	BigInt(*big.Int) *big.Int
 	SetOne() E
 	SetZero() E
 	Inverse(E) E
@@ -46,7 +46,7 @@ func one[E Element[E]]() E {
 func Modulus[E Element[E]]() *big.Int {
 	e := newElement[E]().SetZero()
 	e.Sub(e, newElement[E]().SetOne())
-	b := e.ToBigIntRegular(new(big.Int))
+	b := e.BigInt(new(big.Int))
 	return b.Add(b, big.NewInt(1))
 }
 

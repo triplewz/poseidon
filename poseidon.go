@@ -136,7 +136,7 @@ func optimizedStaticHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].ToBigIntRegular(h)
+	state[1].BigInt(h)
 
 	return h, nil
 }
@@ -161,7 +161,7 @@ func optimizedDynamicHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) 
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].ToBigIntRegular(h)
+	state[1].BigInt(h)
 
 	return h, nil
 }
@@ -186,7 +186,7 @@ func correctHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (*big.Int
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].ToBigIntRegular(h)
+	state[1].BigInt(h)
 
 	return h, nil
 }
