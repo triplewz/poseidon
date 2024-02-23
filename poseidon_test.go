@@ -2,11 +2,11 @@ package poseidon
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	ff "github.com/triplewz/poseidon/bls12_381"
 	"math/big"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPoseidonConstans(t *testing.T) {
@@ -44,21 +44,21 @@ func TestPoseidonConstans(t *testing.T) {
 	roundConstants := hexToElement(strs.RoundConstants)
 
 	// mds matrix
-	mdsMatrix := make([][]*ff.Element, len(strs.Mds))
+	mdsMatrix := make([][]E, len(strs.Mds))
 	for i := 0; i < len(strs.Mds); i++ {
 		mdsMatrix[i] = hexToElement(strs.Mds[i])
 	}
 
 	// pre-sparse matrix
-	preSparseMatrix := make([][]*ff.Element, len(strs.PreSparse))
+	preSparseMatrix := make([][]E, len(strs.PreSparse))
 	for i := 0; i < len(strs.PreSparse); i++ {
 		preSparseMatrix[i] = hexToElement(strs.PreSparse[i])
 	}
 
 	// sparse matrix
-	sparseMatrix := make([][][]*ff.Element, len(strs.Sparse))
+	sparseMatrix := make([][][]E, len(strs.Sparse))
 	for i := 0; i < len(strs.Sparse); i++ {
-		sparseMatrix[i] = make([][]*ff.Element, len(strs.Sparse[i]))
+		sparseMatrix[i] = make([][]E, len(strs.Sparse[i]))
 		for j := 0; j < len(strs.Sparse[i]); j++ {
 			sparseMatrix[i][j] = hexToElement(strs.Sparse[i][j])
 		}
@@ -81,7 +81,7 @@ func TestPoseidonConstans(t *testing.T) {
 	}
 
 	for i := 0; i < 57; i++ {
-		if !IsVecEqual(sparseMatrix[i][0], sparse[i].wHat) || !IsVecEqual(sparseMatrix[i][1], sparse[i].v) {
+		if !IsVecEqual(sparseMatrix[i][0], sparse[i].WHat) || !IsVecEqual(sparseMatrix[i][1], sparse[i].V) {
 			t.Error("got wrong sparse matrix!")
 			return
 		}

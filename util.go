@@ -1,28 +1,30 @@
 package poseidon
 
 import (
-	ff "github.com/triplewz/poseidon/bls12_381"
 	"math/big"
 )
 
 // hexToElement converts hex-strings to finite field elements
-func hexToElement(hex []string) []*ff.Element {
-	elementArray := make([]*ff.Element, len(hex))
+func hexToElement[E Element[E]](hex []string) []E {
+	elementArray := make([]E, len(hex))
 
 	for i := 0; i < len(hex); i++ {
-		elementArray[i] = new(ff.Element)
-		elementArray[i].SetHexString(hex[i])
+		elementArray[i] = newElement[E]()
+		_, err := elementArray[i].SetString(hex[i])
+		if err != nil {
+			panic("Element.SetString failed -> can't parse number in base16 into a big.Int")
+		}
 	}
 
 	return elementArray
 }
 
 // bigToElement converts big integers to finite field elements
-func bigToElement(big []*big.Int) []*ff.Element {
-	elementArray := make([]*ff.Element, len(big))
+func bigToElement[E Element[E]](big []*big.Int) []E {
+	elementArray := make([]E, len(big))
 
 	for i := 0; i < len(big); i++ {
-		elementArray[i] = new(ff.Element)
+		elementArray[i] = newElement[E]()
 		elementArray[i].SetBigInt(big[i])
 	}
 

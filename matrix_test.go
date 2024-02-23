@@ -1,9 +1,10 @@
 package poseidon
 
 import (
-	"github.com/stretchr/testify/assert"
-	ff "github.com/triplewz/poseidon/bls12_381"
 	"testing"
+
+	ff "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
+	"github.com/stretchr/testify/assert"
 )
 
 var two = new(ff.Element).SetUint64(2)
@@ -50,7 +51,7 @@ func TestVector(t *testing.T) {
 	}
 
 	scalarmul := []struct {
-		scalar *ff.Element
+		scalar E
 		v      Vector
 		want   Vector
 	}{
@@ -66,7 +67,7 @@ func TestVector(t *testing.T) {
 
 	vecmul := []struct {
 		v1, v2 Vector
-		want   *ff.Element
+		want   E
 	}{
 		{Vector{one, two}, Vector{one, two}, five},
 		{Vector{one, two}, Vector{zero, zero}, zero},
@@ -82,7 +83,7 @@ func TestVector(t *testing.T) {
 
 func TestMatrixScalarMul(t *testing.T) {
 	scalarmul := []struct {
-		scalar *ff.Element
+		scalar E
 		m      Matrix
 		want   Matrix
 	}{
@@ -207,32 +208,32 @@ func TestFindNonZero(t *testing.T) {
 		m    Matrix
 		c    int
 		want struct {
-			e     *ff.Element
+			e     E
 			index int
 		}
 	}{
 		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 0, struct {
-			e     *ff.Element
+			e     E
 			index int
 		}{two, 0}},
 		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 1, struct {
-			e     *ff.Element
+			e     E
 			index int
 		}{three, 0}},
 		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 2, struct {
-			e     *ff.Element
+			e     E
 			index int
 		}{four, 0}},
 		{Matrix{{one, zero, zero}, {two, three, zero}, {four, five, zero}}, 0, struct {
-			e     *ff.Element
+			e     E
 			index int
 		}{one, 0}},
 		{Matrix{{one, zero, zero}, {two, three, zero}, {four, five, zero}}, 1, struct {
-			e     *ff.Element
+			e     E
 			index int
 		}{three, 1}},
 		{Matrix{{one, zero, zero}, {two, three, zero}, {four, five, zero}}, 2, struct {
-			e     *ff.Element
+			e     E
 			index int
 		}{nil, -1}},
 	}
@@ -242,16 +243,16 @@ func TestFindNonZero(t *testing.T) {
 		assert.NoError(t, err)
 		if gete != nil && cases.want.e != nil {
 			if gete.Cmp(cases.want.e) != 0 || geti != cases.want.index {
-				t.Errorf("find non zero failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
+				t.Errorf("find non zero failed, get element: %V, want element: %V, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
 				return
 			}
 		} else if gete == nil && cases.want.e == nil {
 			if geti != cases.want.index || geti != -1 {
-				t.Errorf("find non zero failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
+				t.Errorf("find non zero failed, get element: %V, want element: %V, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
 				return
 			}
 		} else {
-			t.Errorf("find non zero failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
+			t.Errorf("find non zero failed, get element: %V, want element: %V, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
 			return
 		}
 	}
