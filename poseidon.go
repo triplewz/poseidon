@@ -6,7 +6,7 @@ import (
 )
 
 type PoseidonConst[E Element[E]] struct {
-	Mds            *MdsMatrices[E]
+	Mds            *mdsMatrices[E]
 	RoundConsts    []E
 	ComRoundConts  []E
 	PreSparse      Matrix[E]

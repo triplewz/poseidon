@@ -188,7 +188,7 @@ func IsValid[E Element[E]](z *big.Int) bool {
 // as a result, constants need only be added after each S-box.
 // see https://eprint.iacr.org/2019/458.pdf page 20.
 // in our implementation, we compress all constants in partial rounds.
-func genCompressedRoundConstants[E Element[E]](width, rf, rp int, roundConstants []E, mds *MdsMatrices[E]) ([]E, error) {
+func genCompressedRoundConstants[E Element[E]](width, rf, rp int, roundConstants []E, mds *mdsMatrices[E]) ([]E, error) {
 	comRoundConstants := make([]E, rf*width+rp)
 	mInv := mds.mInv
 

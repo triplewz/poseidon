@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-// MdsMatrices is matrices for improving the efficiency of Poseidon hash.
+// mdsMatrices is matrices for improving the efficiency of Poseidon hash.
 // see more details in the paper https://eprint.iacr.org/2019/458.pdf page 20.
-type MdsMatrices[E Element[E]] struct {
+type mdsMatrices[E Element[E]] struct {
 	// the input mds matrix.
 	m Matrix[E]
 	// mInv is the inverse of the mds matrix.
@@ -82,7 +82,7 @@ regen:
 }
 
 // derive the mds matrices from m.
-func deriveMatrices[E Element[E]](m Matrix[E]) (*MdsMatrices[E], error) {
+func deriveMatrices[E Element[E]](m Matrix[E]) (*mdsMatrices[E], error) {
 	mInv, err := Invert(m)
 	if err != nil {
 		return nil, fmt.Errorf("gen mInv failed, err: %w", err)
@@ -105,7 +105,7 @@ func deriveMatrices[E Element[E]](m Matrix[E]) (*MdsMatrices[E], error) {
 		return nil, fmt.Errorf("gen double prime m failed, err: %w", err)
 	}
 
-	return &MdsMatrices[E]{m, mInv, mHat, mHatInv, mPrime, mDoublePrime}, nil
+	return &mdsMatrices[E]{m, mInv, mHat, mHatInv, mPrime, mDoublePrime}, nil
 }
 
 // generate the matrix m', where m = m'*m”.
