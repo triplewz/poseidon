@@ -1,20 +1,19 @@
 package poseidon
 
 import (
-	"github.com/pkg/errors"
-	ff "github.com/triplewz/poseidon/bls12_381"
+	"fmt"
 	"math/big"
 )
 
-type PoseidonConst struct {
-	Mds            *mdsMatrices
-	RoundConsts    []*ff.Element
-	ComRoundConts  []*ff.Element
-	PreSparse      Matrix
-	Sparse         []*SparseMatrix
-	FullRounds     int
-	HalfFullRounds int
-	PartialRounds  int
+type PoseidonConst[E Element[E]] struct {
+	Mds             *mdsMatrices[E]
+	RoundConsts     []E
+	CompRoundConsts []E
+	PreSparse       Matrix[E]
+	Sparse          []*SparseMatrix[E]
+	FullRounds      int
+	HalfFullRounds  int
+	PartialRounds   int
 }
 
 // provide three hash modes.
@@ -36,12 +35,15 @@ var PoseidonExp = new(big.Int).SetUint64(5)
 // we refer the rust implement (OptimizedStatic mode), see https://github.com/filecoin-project/neptune.
 // the input length is a slice of big integers.
 // the output of poseidon hash is a big integer.
-func Hash(input []*big.Int, pdsContants *PoseidonConst, hash HashMode) (*big.Int, error) {
-	state := bigToElement(input)
+func Hash[E Element[E]](input []*big.Int, pdsContants *PoseidonConst[E], hash HashMode) (*big.Int, error) {
+	state := bigToElement[E](input)
 
 	// Neptune (a Rust implementation of Poseidon) is using domain tag 0x3 by default.
-	domain_tag := new(ff.Element).SetString("3")
-	state = append([]*ff.Element{domain_tag}, state...)
+	domain_tag, err := NewElement[E]().SetString("3")
+	if err != nil {
+		return nil, err
+	}
+	state = append([]E{domain_tag}, state...)
 
 	//pdsContants, err := genPoseidonConstants(t)
 	//if err != nil {
@@ -61,52 +63,59 @@ func Hash(input []*big.Int, pdsContants *PoseidonConst, hash HashMode) (*big.Int
 }
 
 // generate poseidon constants used in the poseidon hash.
-func GenPoseidonConstants(width int) (*PoseidonConst, error) {
+func GenPoseidonConstants[E Element[E]](width int) (*PoseidonConst[E], error) {
 	// round numbers.
-	rf, rp := calcRoundNumbers(width, true)
+	rf, rp := calcRoundNumbers[E](width, true)
 	if rf%2 != 0 {
-		return nil, errors.Errorf("full rounds should be even!")
+		return nil, fmt.Errorf("full rounds should be even")
 	}
+
+	// generate mds matrix
+	mds := genMDS[E](width)
+
+	return GenCustomPoseidonConstants[E](width, 1, 1, rf, rp, mds)
+}
+
+func GenCustomPoseidonConstants[E Element[E]](width, field, sbox, rf, rp int, mds Matrix[E]) (*PoseidonConst[E], error) {
 	half := rf / 2
 
-	// round constants.
-	constants := genRoundConstants(1, 1, ff.Bits, width, rf, rp)
+	constants := genRoundConstants[E](field, sbox, Bits[E](), width, rf, rp)
 
 	// mds matrices.
-	mds, err := createMDSMatrix(width)
+	mdsm, err := deriveMatrices(mds)
 	if err != nil {
-		return nil, errors.Errorf("create mds matrix err: %s", err)
+		return nil, fmt.Errorf("create mds matrix err: %w", err)
 	}
 
 	// compressed round constants.
-	compress, err := genCompressedRoundConstants(width, rf, rp, constants, mds)
+	compress, err := genCompressedRoundConstants(width, rf, rp, constants, mdsm)
 	if err != nil {
-		return nil, errors.Errorf("generate compressed round constants err: %s", err)
+		return nil, fmt.Errorf("generate compressed round constants err: %w", err)
 	}
 
 	// sparse and pre-sparse matrices.
-	sparse, preSparse, err := genSparseMatrix(mds.m, rp)
+	sparse, preSparse, err := genSparseMatrix(mdsm.m, rp)
 	if err != nil {
-		return nil, errors.Errorf("generate sparse matrix err: %s", err)
+		return nil, fmt.Errorf("generate sparse matrix err: %w", err)
 	}
 
-	return &PoseidonConst{
-		Mds:            mds,
-		RoundConsts:    constants,
-		ComRoundConts:  compress,
-		PreSparse:      preSparse,
-		Sparse:         sparse,
-		FullRounds:     rf,
-		PartialRounds:  rp,
-		HalfFullRounds: half,
+	return &PoseidonConst[E]{
+		Mds:             mdsm,
+		RoundConsts:     constants,
+		CompRoundConsts: compress,
+		PreSparse:       preSparse,
+		Sparse:          sparse,
+		FullRounds:      rf,
+		PartialRounds:   rp,
+		HalfFullRounds:  half,
 	}, nil
 }
 
-func optimizedStaticHash(state []*ff.Element, pdsConsts *PoseidonConst) (*big.Int, error) {
+func optimizedStaticHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (*big.Int, error) {
 	t := len(state)
 	// The first full round should use the initial constants.
 	for i := 0; i < t; i++ {
-		state[i].Add(state[i], pdsConsts.ComRoundConts[i])
+		state[i].Add(state[i], pdsConsts.CompRoundConsts[i])
 	}
 
 	// do the first half full rounds
@@ -129,12 +138,12 @@ func optimizedStaticHash(state []*ff.Element, pdsConsts *PoseidonConst) (*big.In
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].ToBigIntRegular(h)
+	state[1].BigInt(h)
 
 	return h, nil
 }
 
-func optimizedDynamicHash(state []*ff.Element, pdsConsts *PoseidonConst) (*big.Int, error) {
+func optimizedDynamicHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (*big.Int, error) {
 	t := len(state)
 	// The first full round should use the initial constants.
 	state = dynamicFullRounds(state, true, true, 0, pdsConsts)
@@ -154,12 +163,12 @@ func optimizedDynamicHash(state []*ff.Element, pdsConsts *PoseidonConst) (*big.I
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].ToBigIntRegular(h)
+	state[1].BigInt(h)
 
 	return h, nil
 }
 
-func correctHash(state []*ff.Element, pdsConsts *PoseidonConst) (*big.Int, error) {
+func correctHash[E Element[E]](state []E, pdsConsts *PoseidonConst[E]) (*big.Int, error) {
 	t := len(state)
 
 	// do the first half full rounds.
@@ -179,13 +188,13 @@ func correctHash(state []*ff.Element, pdsConsts *PoseidonConst) (*big.Int, error
 
 	// output state[1]
 	h := new(big.Int)
-	state[1].ToBigIntRegular(h)
+	state[1].BigInt(h)
 
 	return h, nil
 }
 
 // addRoundConsts adds round constants to the input.
-func addRoundConsts(state []*ff.Element, RoundConsts []*ff.Element) []*ff.Element {
+func addRoundConsts[E Element[E]](state []E, RoundConsts []E) []E {
 	for i := 0; i < len(state); i++ {
 		state[i].Add(state[i], RoundConsts[i])
 	}
@@ -194,17 +203,18 @@ func addRoundConsts(state []*ff.Element, RoundConsts []*ff.Element) []*ff.Elemen
 }
 
 // sbox computes x^5 mod p
-func sbox(e *ff.Element, pre, post *ff.Element) {
+func sbox[E Element[E]](e E, pre, post *E) {
 	//if pre is not nil, add round constants before computing the sbox.
-	if pre != nil {
-		e.Add(e, pre)
+	if pre != nil && !isNil(*pre) {
+		e.Add(e, *pre)
 	}
 
-	e.Exp(*e, PoseidonExp)
+	x := NewElement[E]().Set(e)
+	Exp(e, x, PoseidonExp)
 
 	// if post is not nil, add round constants after computing the sbox.
-	if post != nil {
-		e.Add(e, post)
+	if post != nil && !isNil(*post) {
+		e.Add(e, *post)
 	}
 }
 
@@ -212,10 +222,10 @@ func sbox(e *ff.Element, pre, post *ff.Element) {
 // see https://eprint.iacr.org/2019/458.pdf page 6.
 // The partial round is the same as the full round, with the difference
 // that we apply the S-Box only to the first element.
-func staticPartialRounds(state []*ff.Element, offset int, pdsConsts *PoseidonConst) []*ff.Element {
+func staticPartialRounds[E Element[E]](state []E, offset int, pdsConsts *PoseidonConst[E]) []E {
 	// swap the order of the linear layer and the round constant addition,
 	// see https://eprint.iacr.org/2019/458.pdf page 20.
-	sbox(state[0], nil, pdsConsts.ComRoundConts[offset])
+	sbox(state[0], nil, &pdsConsts.CompRoundConsts[offset])
 
 	state = productSparseMatrix(state, offset-len(state)*(pdsConsts.HalfFullRounds+1), pdsConsts.Sparse)
 	return state
@@ -223,7 +233,7 @@ func staticPartialRounds(state []*ff.Element, offset int, pdsConsts *PoseidonCon
 
 // staticFullRounds computes arc->sbox->M, which has full sbox layers,
 // see https://eprint.iacr.org/2019/458.pdf page 6.
-func staticFullRounds(state []*ff.Element, lastRound bool, offset int, pdsConsts *PoseidonConst) []*ff.Element {
+func staticFullRounds[E Element[E]](state []E, lastRound bool, offset int, pdsConsts *PoseidonConst[E]) []E {
 	// in the last round, there is no need to add round constants because
 	// we have swapped the order of the linear layer and the round constant addition.
 	// see https://eprint.iacr.org/2019/458.pdf page 20.
@@ -233,8 +243,8 @@ func staticFullRounds(state []*ff.Element, lastRound bool, offset int, pdsConsts
 		}
 	} else {
 		for i := 0; i < len(state); i++ {
-			postKey := pdsConsts.ComRoundConts[offset+i]
-			sbox(state[i], nil, postKey)
+			postKey := pdsConsts.CompRoundConsts[offset+i]
+			sbox(state[i], nil, &postKey)
 		}
 	}
 
@@ -250,7 +260,7 @@ func staticFullRounds(state []*ff.Element, lastRound bool, offset int, pdsConsts
 }
 
 // dynamic partial rounds used in the dynamic hash mode.
-func dynamicPartialRounds(state []*ff.Element, pdsContants *PoseidonConst) []*ff.Element {
+func dynamicPartialRounds[E Element[E]](state []E, pdsContants *PoseidonConst[E]) []E {
 	// sbox layer.
 	sbox(state[0], nil, nil)
 
@@ -261,10 +271,10 @@ func dynamicPartialRounds(state []*ff.Element, pdsContants *PoseidonConst) []*ff
 }
 
 // dynamic full rounds used in the dynamic hash mode.
-func dynamicFullRounds(state []*ff.Element, current, next bool, offset int, pdsContants *PoseidonConst) []*ff.Element {
+func dynamicFullRounds[E Element[E]](state []E, current, next bool, offset int, pdsContants *PoseidonConst[E]) []E {
 	t := len(state)
-	preRoundKeys := make([]*ff.Element, t)
-	postVec := make([]*ff.Element, t)
+	preRoundKeys := make([]E, t)
+	postVec := make([]E, t)
 
 	// if `current` is true, we need to add the round constants before the sbox layer.
 	if current {
@@ -285,17 +295,17 @@ func dynamicFullRounds(state []*ff.Element, current, next bool, offset int, pdsC
 			panic(err)
 		}
 
-		postRoundKeys := make([]*ff.Element, t)
+		postRoundKeys := make([]E, t)
 		copy(postRoundKeys, inv)
 
 		// sbox layer.
 		for i := 0; i < t; i++ {
-			sbox(state[i], preRoundKeys[i], postRoundKeys[i])
+			sbox(state[i], &preRoundKeys[i], &postRoundKeys[i])
 		}
 	} else {
 		// sbox layer.
 		for i := 0; i < t; i++ {
-			sbox(state[i], preRoundKeys[i], nil)
+			sbox(state[i], &preRoundKeys[i], nil)
 		}
 	}
 
@@ -305,7 +315,7 @@ func dynamicFullRounds(state []*ff.Element, current, next bool, offset int, pdsC
 }
 
 // partial rounds used in the correct hash mode.
-func partialRounds(state []*ff.Element, offset int, pdsConsts *PoseidonConst) []*ff.Element {
+func partialRounds[E Element[E]](state []E, offset int, pdsConsts *PoseidonConst[E]) []E {
 	// ark.
 	state = addRoundConsts(state, pdsConsts.RoundConsts[offset:offset+len(state)])
 
@@ -319,10 +329,10 @@ func partialRounds(state []*ff.Element, offset int, pdsConsts *PoseidonConst) []
 }
 
 // full rounds used in the correct hash mode.
-func fullRounds(state []*ff.Element, offset int, pdsConsts *PoseidonConst) []*ff.Element {
+func fullRounds[E Element[E]](state []E, offset int, pdsConsts *PoseidonConst[E]) []E {
 	// sbox layer.
 	for i := 0; i < len(state); i++ {
-		sbox(state[i], pdsConsts.RoundConsts[offset+i], nil)
+		sbox(state[i], &pdsConsts.RoundConsts[offset+i], nil)
 	}
 
 	// mixed layer, multiply the elements by the constant MDS matrix.
@@ -332,16 +342,16 @@ func fullRounds(state []*ff.Element, offset int, pdsConsts *PoseidonConst) []*ff
 }
 
 // productMdsMatrix computes the product between the elements and the mds matrix.
-func productMdsMatrix(state []*ff.Element, mds Matrix) []*ff.Element {
+func productMdsMatrix[E Element[E]](state []E, mds Matrix[E]) []E {
 	if len(state) != len(mds) {
 		panic("cannot compute the product !")
 	}
 
-	var res []*ff.Element
+	var res []E
 	for j := 0; j < len(state); j++ {
-		tmp1 := new(ff.Element)
+		tmp1 := NewElement[E]()
 		for i := 0; i < len(state); i++ {
-			tmp2 := new(ff.Element).Mul(state[i], mds[i][j])
+			tmp2 := NewElement[E]().Mul(state[i], mds[i][j])
 			tmp1.Add(tmp1, tmp2)
 		}
 		res = append(res, tmp1)
@@ -355,16 +365,16 @@ func productMdsMatrix(state []*ff.Element, mds Matrix) []*ff.Element {
 }
 
 // productPreSparseMatrix computes the product between the elements and the pre-sparse matrix.
-func productPreSparseMatrix(state []*ff.Element, preSparseMatrix Matrix) []*ff.Element {
+func productPreSparseMatrix[E Element[E]](state []E, preSparseMatrix Matrix[E]) []E {
 	if len(state) != len(preSparseMatrix) {
 		panic("cannot compute the product !")
 	}
 
-	var res []*ff.Element
+	var res []E
 	for j := 0; j < len(state); j++ {
-		tmp1 := new(ff.Element)
+		tmp1 := NewElement[E]()
 		for i := 0; i < len(state); i++ {
-			tmp2 := new(ff.Element).Mul(state[i], preSparseMatrix[i][j])
+			tmp2 := NewElement[E]().Mul(state[i], preSparseMatrix[i][j])
 			tmp1.Add(tmp1, tmp2)
 		}
 		res = append(res, tmp1)
@@ -374,7 +384,7 @@ func productPreSparseMatrix(state []*ff.Element, preSparseMatrix Matrix) []*ff.E
 }
 
 // productSparseMatrix computes the product between the elements and the sparse matrix.
-func productSparseMatrix(state []*ff.Element, offset int, sparse []*SparseMatrix) []*ff.Element {
+func productSparseMatrix[E Element[E]](state []E, offset int, sparse []*SparseMatrix[E]) []E {
 	// this part is described in https://eprint.iacr.org/2019/458.pdf page 20.
 	// the sparse matrix M'' consists of:
 	//
@@ -388,16 +398,16 @@ func productSparseMatrix(state []*ff.Element, offset int, sparse []*SparseMatrix
 	// we can first compute ret[0] = state * [M_00, w_hat],
 	// then for 1 <= i < t,
 	// compute ret[i] = state[0] * v[i-1] + state[i].
-	res := make([]*ff.Element, len(state))
-	res[0] = new(ff.Element)
+	res := make([]E, len(state))
+	res[0] = NewElement[E]()
 	for i := 0; i < len(state); i++ {
-		tmp := new(ff.Element).Mul(state[i], sparse[offset].wHat[i])
+		tmp := NewElement[E]().Mul(state[i], sparse[offset].WHat[i])
 		res[0].Add(res[0], tmp)
 	}
 
 	for i := 1; i < len(state); i++ {
-		tmp := new(ff.Element).Mul(state[0], sparse[offset].v[i-1])
-		res[i] = new(ff.Element).Add(state[i], tmp)
+		tmp := NewElement[E]().Mul(state[0], sparse[offset].V[i-1])
+		res[i] = NewElement[E]().Add(state[i], tmp)
 	}
 
 	return res
