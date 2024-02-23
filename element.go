@@ -30,6 +30,11 @@ func newElement[E Element[E]]() E {
 	return val.Interface().(E)
 }
 
+func isNil[E Element[E]](t E) bool {
+	v := reflect.ValueOf(t)
+	return v.IsNil()
+}
+
 func zero[E Element[E]]() E {
 	return newElement[E]().SetZero()
 }

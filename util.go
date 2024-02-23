@@ -10,10 +10,11 @@ func hexToElement[E Element[E]](hex []string) []E {
 
 	for i := 0; i < len(hex); i++ {
 		elementArray[i] = newElement[E]()
-		_, err := elementArray[i].SetString(hex[i])
-		if err != nil {
+		b, ok := new(big.Int).SetString(hex[i], 16)
+		if !ok {
 			panic("Element.SetString failed -> can't parse number in base16 into a big.Int")
 		}
+		elementArray[i].SetBigInt(b)
 	}
 
 	return elementArray

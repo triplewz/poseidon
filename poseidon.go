@@ -201,14 +201,14 @@ func addRoundConsts[E Element[E]](state []E, RoundConsts []E) []E {
 // sbox computes x^5 mod p
 func sbox[E Element[E]](e E, pre, post *E) {
 	//if pre is not nil, add round constants before computing the sbox.
-	if pre != nil {
+	if pre != nil && !isNil(*pre) {
 		e.Add(e, *pre)
 	}
 
 	Exp(e, e, PoseidonExp)
 
 	// if post is not nil, add round constants after computing the sbox.
-	if post != nil {
+	if post != nil && !isNil(*post) {
 		e.Add(e, *post)
 	}
 }

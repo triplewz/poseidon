@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var zeroE = new(ff.Element).SetUint64(0)
+var oneE = new(ff.Element).SetUint64(1)
 var two = new(ff.Element).SetUint64(2)
 var three = new(ff.Element).SetUint64(3)
 var four = new(ff.Element).SetUint64(4)
@@ -20,13 +22,13 @@ func TestVector(t *testing.T) {
 	negTwo := new(ff.Element).Neg(two)
 
 	sub := []struct {
-		v1, v2 Vector
-		want   Vector
+		v1, v2 Vector[*ff.Element]
+		want   Vector[*ff.Element]
 	}{
-		{Vector{one, two}, Vector{one, two}, Vector{zero, zero}},
-		{Vector{one, two}, Vector{zero, zero}, Vector{one, two}},
-		{Vector{three, four}, Vector{one, two}, Vector{two, two}},
-		{Vector{one, two}, Vector{three, four}, Vector{negTwo, negTwo}},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{zeroE, zeroE}},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{zeroE, zeroE}, Vector[*ff.Element]{oneE, two}},
+		{Vector[*ff.Element]{three, four}, Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{two, two}},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{three, four}, Vector[*ff.Element]{negTwo, negTwo}},
 	}
 
 	for _, cases := range sub {
@@ -36,12 +38,12 @@ func TestVector(t *testing.T) {
 	}
 
 	add := []struct {
-		v1, v2 Vector
-		want   Vector
+		v1, v2 Vector[*ff.Element]
+		want   Vector[*ff.Element]
 	}{
-		{Vector{one, two}, Vector{one, two}, Vector{two, four}},
-		{Vector{one, two}, Vector{zero, zero}, Vector{one, two}},
-		{Vector{one, two}, Vector{one, negTwo}, Vector{two, zero}},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{two, four}},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{zeroE, zeroE}, Vector[*ff.Element]{oneE, two}},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{oneE, negTwo}, Vector[*ff.Element]{two, zeroE}},
 	}
 
 	for _, cases := range add {
@@ -51,13 +53,13 @@ func TestVector(t *testing.T) {
 	}
 
 	scalarmul := []struct {
-		scalar E
-		v      Vector
-		want   Vector
+		scalar *ff.Element
+		v      Vector[*ff.Element]
+		want   Vector[*ff.Element]
 	}{
-		{zero, Vector{one, two}, Vector{zero, zero}},
-		{one, Vector{one, two}, Vector{one, two}},
-		{two, Vector{one, two}, Vector{two, four}},
+		{zeroE, Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{zeroE, zeroE}},
+		{oneE, Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{oneE, two}},
+		{two, Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{two, four}},
 	}
 
 	for _, cases := range scalarmul {
@@ -66,12 +68,12 @@ func TestVector(t *testing.T) {
 	}
 
 	vecmul := []struct {
-		v1, v2 Vector
-		want   E
+		v1, v2 Vector[*ff.Element]
+		want   *ff.Element
 	}{
-		{Vector{one, two}, Vector{one, two}, five},
-		{Vector{one, two}, Vector{zero, zero}, zero},
-		{Vector{one, two}, Vector{negTwo, one}, zero},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{oneE, two}, five},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{zeroE, zeroE}, zeroE},
+		{Vector[*ff.Element]{oneE, two}, Vector[*ff.Element]{negTwo, oneE}, zeroE},
 	}
 
 	for _, cases := range vecmul {
@@ -83,13 +85,13 @@ func TestVector(t *testing.T) {
 
 func TestMatrixScalarMul(t *testing.T) {
 	scalarmul := []struct {
-		scalar E
-		m      Matrix
-		want   Matrix
+		scalar *ff.Element
+		m      Matrix[*ff.Element]
+		want   Matrix[*ff.Element]
 	}{
-		{zero, Matrix{{one, two}, {one, two}}, Matrix{{zero, zero}, {zero, zero}}},
-		{one, Matrix{{one, two}, {one, two}}, Matrix{{one, two}, {one, two}}},
-		{two, Matrix{{one, two}, {three, four}}, Matrix{{two, four}, {six, eight}}},
+		{zeroE, Matrix[*ff.Element]{{oneE, two}, {oneE, two}}, Matrix[*ff.Element]{{zeroE, zeroE}, {zeroE, zeroE}}},
+		{oneE, Matrix[*ff.Element]{{oneE, two}, {oneE, two}}, Matrix[*ff.Element]{{oneE, two}, {oneE, two}}},
+		{two, Matrix[*ff.Element]{{oneE, two}, {three, four}}, Matrix[*ff.Element]{{two, four}, {six, eight}}},
 	}
 
 	for _, cases := range scalarmul {
@@ -99,27 +101,27 @@ func TestMatrixScalarMul(t *testing.T) {
 }
 
 func TestIdentity(t *testing.T) {
-	get := MakeIdentity(3)
-	want := Matrix{{one, zero, zero}, {zero, one, zero}, {zero, zero, one}}
+	get := MakeIdentity[*ff.Element](3)
+	want := Matrix[*ff.Element]{{oneE, zeroE, zeroE}, {zeroE, oneE, zeroE}, {zeroE, zeroE, oneE}}
 	assert.Equal(t, get, want)
 }
 
 func TestMinor(t *testing.T) {
-	m := Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}
+	m := Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}
 
 	testMatrix := []struct {
 		i, j int
-		want Matrix
+		want Matrix[*ff.Element]
 	}{
-		{0, 0, Matrix{{five, six}, {eight, nine}}},
-		{0, 1, Matrix{{four, six}, {seven, nine}}},
-		{0, 2, Matrix{{four, five}, {seven, eight}}},
-		{1, 0, Matrix{{two, three}, {eight, nine}}},
-		{1, 1, Matrix{{one, three}, {seven, nine}}},
-		{1, 2, Matrix{{one, two}, {seven, eight}}},
-		{2, 0, Matrix{{two, three}, {five, six}}},
-		{2, 1, Matrix{{one, three}, {four, six}}},
-		{2, 2, Matrix{{one, two}, {four, five}}},
+		{0, 0, Matrix[*ff.Element]{{five, six}, {eight, nine}}},
+		{0, 1, Matrix[*ff.Element]{{four, six}, {seven, nine}}},
+		{0, 2, Matrix[*ff.Element]{{four, five}, {seven, eight}}},
+		{1, 0, Matrix[*ff.Element]{{two, three}, {eight, nine}}},
+		{1, 1, Matrix[*ff.Element]{{oneE, three}, {seven, nine}}},
+		{1, 2, Matrix[*ff.Element]{{oneE, two}, {seven, eight}}},
+		{2, 0, Matrix[*ff.Element]{{two, three}, {five, six}}},
+		{2, 1, Matrix[*ff.Element]{{oneE, three}, {four, six}}},
+		{2, 2, Matrix[*ff.Element]{{oneE, two}, {four, five}}},
 	}
 
 	for _, cases := range testMatrix {
@@ -129,19 +131,19 @@ func TestMinor(t *testing.T) {
 	}
 }
 
-func TestCopyMatrix(t *testing.T) {
-	m := Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}
+func TestcopyMatrix(t *testing.T) {
+	m := Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}
 
 	testMatrix := []struct {
 		start, end int
-		want       Matrix
+		want       Matrix[*ff.Element]
 	}{
-		{0, 1, Matrix{{one, two, three}}},
-		{0, 2, Matrix{{one, two, three}, {four, five, six}}},
-		{0, 3, Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}},
-		{1, 2, Matrix{{four, five, six}}},
-		{1, 3, Matrix{{four, five, six}, {seven, eight, nine}}},
-		{2, 3, Matrix{{seven, eight, nine}}},
+		{0, 1, Matrix[*ff.Element]{{oneE, two, three}}},
+		{0, 2, Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}}},
+		{0, 3, Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}},
+		{1, 2, Matrix[*ff.Element]{{four, five, six}}},
+		{1, 3, Matrix[*ff.Element]{{four, five, six}, {seven, eight, nine}}},
+		{2, 3, Matrix[*ff.Element]{{seven, eight, nine}}},
 	}
 
 	for _, cases := range testMatrix {
@@ -152,10 +154,10 @@ func TestCopyMatrix(t *testing.T) {
 
 func TestTranspose(t *testing.T) {
 	testMatrix := []struct {
-		input, want Matrix
+		input, want Matrix[*ff.Element]
 	}{
-		{Matrix{{one, two}, {three, four}}, Matrix{{one, three}, {two, four}}},
-		{Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Matrix{{one, four, seven}, {two, five, eight}, {three, six, nine}}},
+		{Matrix[*ff.Element]{{oneE, two}, {three, four}}, Matrix[*ff.Element]{{oneE, three}, {two, four}}},
+		{Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Matrix[*ff.Element]{{oneE, four, seven}, {two, five, eight}, {three, six, nine}}},
 	}
 
 	for _, cases := range testMatrix {
@@ -165,15 +167,15 @@ func TestTranspose(t *testing.T) {
 }
 
 func TestUpperTriangular(t *testing.T) {
-	shadow := MakeIdentity(3)
+	shadow := MakeIdentity[*ff.Element](3)
 	testMatrix := []struct {
-		m, s Matrix
+		m, s Matrix[*ff.Element]
 		want bool
 	}{
-		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, shadow, true},
-		{Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, shadow, false},
-		{Matrix{{one, two, three}, {zero, three, four}, {zero, zero, three}}, shadow, true},
-		{Matrix{{two, three, four}, {zero, two, four}, {zero, zero, one}}, shadow, true},
+		{Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, shadow, true},
+		{Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, shadow, false},
+		{Matrix[*ff.Element]{{oneE, two, three}, {zeroE, three, four}, {zeroE, zeroE, three}}, shadow, true},
+		{Matrix[*ff.Element]{{two, three, four}, {zeroE, two, four}, {zeroE, zeroE, oneE}}, shadow, true},
 	}
 
 	for _, cases := range testMatrix {
@@ -184,19 +186,19 @@ func TestUpperTriangular(t *testing.T) {
 	}
 }
 
-func TestFindNonZero(t *testing.T) {
+func TestFindNonzeroE(t *testing.T) {
 	vectorSet := []struct {
 		k    int
-		v    Vector
+		v    Vector[*ff.Element]
 		want bool
 	}{
-		{0, Vector{zero, one, two, three}, false},
-		{1, Vector{zero, one, two, three}, true},
-		{2, Vector{zero, one, two, three}, false},
-		{2, Vector{zero, zero, zero, one}, true},
-		{3, Vector{zero, zero, zero, one}, true},
-		{3, Vector{zero, one, two, three}, false},
-		{4, Vector{zero, one, two, three}, false},
+		{0, Vector[*ff.Element]{zeroE, oneE, two, three}, false},
+		{1, Vector[*ff.Element]{zeroE, oneE, two, three}, true},
+		{2, Vector[*ff.Element]{zeroE, oneE, two, three}, false},
+		{2, Vector[*ff.Element]{zeroE, zeroE, zeroE, oneE}, true},
+		{3, Vector[*ff.Element]{zeroE, zeroE, zeroE, oneE}, true},
+		{3, Vector[*ff.Element]{zeroE, oneE, two, three}, false},
+		{4, Vector[*ff.Element]{zeroE, oneE, two, three}, false},
 	}
 
 	for _, cases := range vectorSet {
@@ -204,55 +206,55 @@ func TestFindNonZero(t *testing.T) {
 		assert.Equal(t, get, cases.want)
 	}
 
-	nonzeroSet := []struct {
-		m    Matrix
+	nonzeroESet := []struct {
+		m    Matrix[*ff.Element]
 		c    int
 		want struct {
-			e     E
+			e     *ff.Element
 			index int
 		}
 	}{
-		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 0, struct {
-			e     E
+		{Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 0, struct {
+			e     *ff.Element
 			index int
 		}{two, 0}},
-		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 1, struct {
-			e     E
+		{Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 1, struct {
+			e     *ff.Element
 			index int
 		}{three, 0}},
-		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 2, struct {
-			e     E
+		{Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, 2, struct {
+			e     *ff.Element
 			index int
 		}{four, 0}},
-		{Matrix{{one, zero, zero}, {two, three, zero}, {four, five, zero}}, 0, struct {
-			e     E
+		{Matrix[*ff.Element]{{oneE, zeroE, zeroE}, {two, three, zeroE}, {four, five, zeroE}}, 0, struct {
+			e     *ff.Element
 			index int
-		}{one, 0}},
-		{Matrix{{one, zero, zero}, {two, three, zero}, {four, five, zero}}, 1, struct {
-			e     E
+		}{oneE, 0}},
+		{Matrix[*ff.Element]{{oneE, zeroE, zeroE}, {two, three, zeroE}, {four, five, zeroE}}, 1, struct {
+			e     *ff.Element
 			index int
 		}{three, 1}},
-		{Matrix{{one, zero, zero}, {two, three, zero}, {four, five, zero}}, 2, struct {
-			e     E
+		{Matrix[*ff.Element]{{oneE, zeroE, zeroE}, {two, three, zeroE}, {four, five, zeroE}}, 2, struct {
+			e     *ff.Element
 			index int
 		}{nil, -1}},
 	}
 
-	for _, cases := range nonzeroSet {
+	for _, cases := range nonzeroESet {
 		gete, geti, err := findNonZero(cases.m, cases.c)
 		assert.NoError(t, err)
 		if gete != nil && cases.want.e != nil {
 			if gete.Cmp(cases.want.e) != 0 || geti != cases.want.index {
-				t.Errorf("find non zero failed, get element: %V, want element: %V, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
+				t.Errorf("find non zeroE failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
 				return
 			}
 		} else if gete == nil && cases.want.e == nil {
 			if geti != cases.want.index || geti != -1 {
-				t.Errorf("find non zero failed, get element: %V, want element: %V, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
+				t.Errorf("find non zeroE failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
 				return
 			}
 		} else {
-			t.Errorf("find non zero failed, get element: %V, want element: %V, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
+			t.Errorf("find non zeroE failed, get element: %v, want element: %v, get index: %d, want index: %d", gete, cases.want.e, geti, cases.want.index)
 			return
 		}
 	}
@@ -276,15 +278,15 @@ func TestMatMul(t *testing.T) {
 	eighteen := new(ff.Element).SetUint64(18)
 
 	testMatrix := []struct {
-		m1, m2 Matrix
-		want   Matrix
+		m1, m2 Matrix[*ff.Element]
+		want   Matrix[*ff.Element]
 	}{
-		{Matrix{{zero, zero}, {zero, zero}}, Matrix{{one, two}, {one, two}}, Matrix{{zero, zero}, {zero, zero}}},
-		{Matrix{{one, two}, {two, three}}, Matrix{{one, two}, {one, zero}}, Matrix{{three, two}, {five, four}}},
-		{Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix{{m00, m01, m02}, {m10, m11, m12}, {m20, m21, m22}}},
-		{Matrix{{one, one, one}, {one, one, one}, {one, one, one}}, Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix{{thirteen, sixteen, eighteen}, {thirteen, sixteen, eighteen}, {thirteen, sixteen, eighteen}}},
-		{Matrix{{zero, zero, zero}, {zero, zero, zero}, {zero, zero, zero}}, Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix{{zero, zero, zero}, {zero, zero, zero}, {zero, zero, zero}}},
-		{Matrix{{one, zero, zero}, {zero, one, zero}, {zero, zero, one}}, Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}},
+		{Matrix[*ff.Element]{{zeroE, zeroE}, {zeroE, zeroE}}, Matrix[*ff.Element]{{oneE, two}, {oneE, two}}, Matrix[*ff.Element]{{zeroE, zeroE}, {zeroE, zeroE}}},
+		{Matrix[*ff.Element]{{oneE, two}, {two, three}}, Matrix[*ff.Element]{{oneE, two}, {oneE, zeroE}}, Matrix[*ff.Element]{{three, two}, {five, four}}},
+		{Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix[*ff.Element]{{m00, m01, m02}, {m10, m11, m12}, {m20, m21, m22}}},
+		{Matrix[*ff.Element]{{oneE, oneE, oneE}, {oneE, oneE, oneE}, {oneE, oneE, oneE}}, Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix[*ff.Element]{{thirteen, sixteen, eighteen}, {thirteen, sixteen, eighteen}, {thirteen, sixteen, eighteen}}},
+		{Matrix[*ff.Element]{{zeroE, zeroE, zeroE}, {zeroE, zeroE, zeroE}, {zeroE, zeroE, zeroE}}, Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix[*ff.Element]{{zeroE, zeroE, zeroE}, {zeroE, zeroE, zeroE}, {zeroE, zeroE, zeroE}}},
+		{Matrix[*ff.Element]{{oneE, zeroE, zeroE}, {zeroE, oneE, zeroE}, {zeroE, zeroE, oneE}}, Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}},
 	}
 
 	for _, cases := range testMatrix {
@@ -299,13 +301,13 @@ func TestMatMul(t *testing.T) {
 	twentyfour := new(ff.Element).SetUint64(24)
 
 	testLeftMul := []struct {
-		m    Matrix
-		v    Vector
-		want Vector
+		m    Matrix[*ff.Element]
+		v    Vector[*ff.Element]
+		want Vector[*ff.Element]
 	}{
-		{Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Vector{zero, zero, zero}, Vector{zero, zero, zero}},
-		{Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Vector{one, zero, zero}, Vector{one, four, seven}},
-		{Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Vector{one, one, one}, Vector{six, fifteen, twentyfour}},
+		{Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Vector[*ff.Element]{zeroE, zeroE, zeroE}, Vector[*ff.Element]{zeroE, zeroE, zeroE}},
+		{Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Vector[*ff.Element]{oneE, zeroE, zeroE}, Vector[*ff.Element]{oneE, four, seven}},
+		{Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Vector[*ff.Element]{oneE, oneE, oneE}, Vector[*ff.Element]{six, fifteen, twentyfour}},
 	}
 
 	for _, cases := range testLeftMul {
@@ -319,13 +321,13 @@ func TestMatMul(t *testing.T) {
 	twelve := new(ff.Element).SetUint64(12)
 
 	testRightMul := []struct {
-		v    Vector
-		m    Matrix
-		want Vector
+		v    Vector[*ff.Element]
+		m    Matrix[*ff.Element]
+		want Vector[*ff.Element]
 	}{
-		{Vector{zero, zero, zero}, Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Vector{zero, zero, zero}},
-		{Vector{one, zero, zero}, Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Vector{one, two, three}},
-		{Vector{one, one, one}, Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, Vector{twelve, fifteen, eighteen}},
+		{Vector[*ff.Element]{zeroE, zeroE, zeroE}, Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Vector[*ff.Element]{zeroE, zeroE, zeroE}},
+		{Vector[*ff.Element]{oneE, zeroE, zeroE}, Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Vector[*ff.Element]{oneE, two, three}},
+		{Vector[*ff.Element]{oneE, oneE, oneE}, Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, Vector[*ff.Element]{twelve, fifteen, eighteen}},
 	}
 
 	for _, cases := range testRightMul {
@@ -336,12 +338,12 @@ func TestMatMul(t *testing.T) {
 }
 
 func TestEliminate(t *testing.T) {
-	m := Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}
-	shadow := MakeIdentity(3)
+	m := Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}
+	shadow := MakeIdentity[*ff.Element](3)
 
 	// result of eliminating the first column.
 	// [[2,3,4],[0,-1,-2],[0,-5/2,-6]]
-	negone := new(ff.Element).Neg(one)
+	negoneE := new(ff.Element).Neg(oneE)
 	negtwo := new(ff.Element).Neg(two)
 	negFiveDivTwo := new(ff.Element).Neg(five)
 	negFiveDivTwo.Div(negFiveDivTwo, two)
@@ -357,15 +359,15 @@ func TestEliminate(t *testing.T) {
 
 	// result of eliminating the third column.
 	// [[2,3,4],[1,1/2,0],[3,2,0]]
-	oneDivTwo := new(ff.Element).Div(one, two)
+	oneEDivTwo := new(ff.Element).Div(oneE, two)
 
 	testMatrix := []struct {
 		c    int
-		want Matrix
+		want Matrix[*ff.Element]
 	}{
-		{0, Matrix{{two, three, four}, {zero, negone, negtwo}, {zero, negFiveDivTwo, negsix}}},
-		{1, Matrix{{two, three, four}, {twoDivThree, zero, negTwoDivThree}, {fiveDivThree, zero, negEightDivThree}}},
-		{2, Matrix{{two, three, four}, {one, oneDivTwo, zero}, {three, two, zero}}},
+		{0, Matrix[*ff.Element]{{two, three, four}, {zeroE, negoneE, negtwo}, {zeroE, negFiveDivTwo, negsix}}},
+		{1, Matrix[*ff.Element]{{two, three, four}, {twoDivThree, zeroE, negTwoDivThree}, {fiveDivThree, zeroE, negEightDivThree}}},
+		{2, Matrix[*ff.Element]{{two, three, four}, {oneE, oneEDivTwo, zeroE}, {three, two, zeroE}}},
 	}
 
 	for _, cases := range testMatrix {
@@ -380,27 +382,27 @@ func TestReduceToIdentity(t *testing.T) {
 	// m^-1=[[1,-2/3,-1/9],[0,1/3,-4/9],[0,0,1/3]]
 	negTwoDivThree := new(ff.Element).Div(two, three)
 	negTwoDivThree.Neg(negTwoDivThree)
-	negOneDivNine := new(ff.Element).Div(one, nine)
-	negOneDivNine.Neg(negOneDivNine)
-	oneDivThree := new(ff.Element).Div(one, three)
+	negoneEDivNine := new(ff.Element).Div(oneE, nine)
+	negoneEDivNine.Neg(negoneEDivNine)
+	oneEDivThree := new(ff.Element).Div(oneE, three)
 	negFourDivNine := new(ff.Element).Div(four, nine)
 	negFourDivNine.Neg(negFourDivNine)
 
 	// m=[[2,3,4],[0,2,4],[0,0,1]]
 	// m^-1=[[1/2,-3/4,1],[0,1/2,-2],[0,0,1]]
-	oneDivTwo := new(ff.Element).Div(one, two)
+	oneEDivTwo := new(ff.Element).Div(oneE, two)
 	negThreeDivFour := new(ff.Element).Div(three, four)
 	negThreeDivFour.Neg(negThreeDivFour)
 	negtwo := new(ff.Element).Neg(two)
 
-	shadow := MakeIdentity(3)
+	shadow := MakeIdentity[*ff.Element](3)
 
 	testMatrix := []struct {
-		m    Matrix
-		want Matrix
+		m    Matrix[*ff.Element]
+		want Matrix[*ff.Element]
 	}{
-		{Matrix{{one, two, three}, {zero, three, four}, {zero, zero, three}}, Matrix{{one, negTwoDivThree, negOneDivNine}, {zero, oneDivThree, negFourDivNine}, {zero, zero, oneDivThree}}},
-		{Matrix{{two, three, four}, {zero, two, four}, {zero, zero, one}}, Matrix{{oneDivTwo, negThreeDivFour, one}, {zero, oneDivTwo, negtwo}, {zero, zero, one}}},
+		{Matrix[*ff.Element]{{oneE, two, three}, {zeroE, three, four}, {zeroE, zeroE, three}}, Matrix[*ff.Element]{{oneE, negTwoDivThree, negoneEDivNine}, {zeroE, oneEDivThree, negFourDivNine}, {zeroE, zeroE, oneEDivThree}}},
+		{Matrix[*ff.Element]{{two, three, four}, {zeroE, two, four}, {zeroE, zeroE, oneE}}, Matrix[*ff.Element]{{oneEDivTwo, negThreeDivFour, oneE}, {zeroE, oneEDivTwo, negtwo}, {zeroE, zeroE, oneE}}},
 	}
 
 	for _, cases := range testMatrix {
@@ -412,13 +414,13 @@ func TestReduceToIdentity(t *testing.T) {
 
 func TestIsInvertible(t *testing.T) {
 	testMatrix := []struct {
-		m    Matrix
+		m    Matrix[*ff.Element]
 		want bool
 	}{
-		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, true},
-		{Matrix{{one, two, three}, {zero, three, four}, {zero, zero, three}}, true},
-		{Matrix{{two, three, four}, {zero, two, four}, {zero, zero, one}}, true},
-		{Matrix{{one, two, three}, {four, five, six}, {seven, eight, nine}}, false},
+		{Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, true},
+		{Matrix[*ff.Element]{{oneE, two, three}, {zeroE, three, four}, {zeroE, zeroE, three}}, true},
+		{Matrix[*ff.Element]{{two, three, four}, {zeroE, two, four}, {zeroE, zeroE, oneE}}, true},
+		{Matrix[*ff.Element]{{oneE, two, three}, {four, five, six}, {seven, eight, nine}}, false},
 	}
 
 	for _, cases := range testMatrix {
@@ -447,9 +449,9 @@ func TestInvert(t *testing.T) {
 	// [0 0 1/3]
 	negTwoDivThree := new(ff.Element).Div(two, three)
 	negTwoDivThree.Neg(negTwoDivThree)
-	negOneDivNine := new(ff.Element).Div(one, nine)
-	negOneDivNine.Neg(negOneDivNine)
-	oneDivThree := new(ff.Element).Div(one, three)
+	negoneEDivNine := new(ff.Element).Div(oneE, nine)
+	negoneEDivNine.Neg(negoneEDivNine)
+	oneEDivThree := new(ff.Element).Div(oneE, three)
 	negFourDivNine := new(ff.Element).Div(four, nine)
 	negFourDivNine.Neg(negFourDivNine)
 
@@ -461,7 +463,7 @@ func TestInvert(t *testing.T) {
 	// [-4 4 -1]
 	// [5 -6 2]
 	// [-3/2 5/2 -1]
-	negone := new(ff.Element).Neg(one)
+	negoneE := new(ff.Element).Neg(oneE)
 	negfour := new(ff.Element).Neg(four)
 	negsix := new(ff.Element).Neg(six)
 	negThreeDivTwo := new(ff.Element).Div(three, two)
@@ -469,12 +471,12 @@ func TestInvert(t *testing.T) {
 	fiveDivTwo := new(ff.Element).Div(five, two)
 
 	testMatrix := []struct {
-		m    Matrix
-		want Matrix
+		m    Matrix[*ff.Element]
+		want Matrix[*ff.Element]
 	}{
-		{Matrix{{one, three}, {two, seven}}, Matrix{{seven, negthree}, {negtwo, one}}},
-		{Matrix{{one, two, three}, {zero, three, four}, {zero, zero, three}}, Matrix{{one, negTwoDivThree, negOneDivNine}, {zero, oneDivThree, negFourDivNine}, {zero, zero, oneDivThree}}},
-		{Matrix{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix{{negfour, four, negone}, {five, negsix, two}, {negThreeDivTwo, fiveDivTwo, negone}}},
+		{Matrix[*ff.Element]{{oneE, three}, {two, seven}}, Matrix[*ff.Element]{{seven, negthree}, {negtwo, oneE}}},
+		{Matrix[*ff.Element]{{oneE, two, three}, {zeroE, three, four}, {zeroE, zeroE, three}}, Matrix[*ff.Element]{{oneE, negTwoDivThree, negoneEDivNine}, {zeroE, oneEDivThree, negFourDivNine}, {zeroE, zeroE, oneEDivThree}}},
+		{Matrix[*ff.Element]{{two, three, four}, {four, five, six}, {seven, eight, eight}}, Matrix[*ff.Element]{{negfour, four, negoneE}, {five, negsix, two}, {negThreeDivTwo, fiveDivTwo, negoneE}}},
 	}
 
 	for _, cases := range testMatrix {

@@ -1,8 +1,10 @@
 package poseidon
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	ff "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCalcRoundNum(t *testing.T) {
@@ -52,7 +54,7 @@ func TestCalcRoundNum(t *testing.T) {
 	}
 
 	for _, cases := range tests {
-		getRf, getRp := calcRoundNumbers(cases.t, cases.s)
+		getRf, getRp := calcRoundNumbers[*ff.Element](cases.t, cases.s)
 		assert.Equal(t, getRf, cases.want.rf)
 		assert.Equal(t, getRp, cases.want.rp)
 	}
@@ -71,7 +73,7 @@ func TestGenRoundConstants(t *testing.T) {
 	}
 
 	for _, cases := range tests {
-		get := genRoundConstants(1, 1, 255, cases.t, cases.rf, cases.rp)
+		get := genRoundConstants[*ff.Element](1, 1, 255, cases.t, cases.rf, cases.rp)
 		assert.Equal(t, len(get), cases.want)
 	}
 }
@@ -89,8 +91,9 @@ func TestGenCompressedRoundConstants(t *testing.T) {
 	}
 
 	for _, cases := range tests {
-		roundContants := genRoundConstants(1, 1, 255, cases.t, cases.rf, cases.rp)
-		mds, _ := createMDSMatrix(cases.t)
+		roundContants := genRoundConstants[*ff.Element](1, 1, 255, cases.t, cases.rf, cases.rp)
+		m := genMDS[*ff.Element](cases.t)
+		mds, _ := deriveMatrices(m)
 		comRoundContantsm, err := genCompressedRoundConstants(cases.t, cases.rf, cases.rp, roundContants, mds)
 		assert.NoError(t, err)
 
