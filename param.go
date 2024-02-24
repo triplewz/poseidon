@@ -82,7 +82,7 @@ func appendBits(bits []byte, n, size int) []byte {
 
 // genNewBits generates new 80-bits slice and returns the newly generated bit.
 func genNewBits(bits []byte) byte {
-	newBit := byte(bits[0] ^ bits[13] ^ bits[23] ^ bits[38] ^ bits[51] ^ bits[62])
+	newBit := bits[0] ^ bits[13] ^ bits[23] ^ bits[38] ^ bits[51] ^ bits[62]
 	newBits := append(bits, newBit)
 	copy(bits, newBits[1:])
 	return newBit
