@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	ff "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
+	"github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,29 +39,29 @@ func TestPoseidonConstans(t *testing.T) {
 	assert.NoError(t, err)
 
 	// compressed round constants
-	comRoundConstants := hexToElement[*ff.Element](strs.CompressedRoundConstants)
+	comRoundConstants := hexToElement[*fr.Element](strs.CompressedRoundConstants)
 
 	// round constants
-	roundConstants := hexToElement[*ff.Element](strs.RoundConstants)
+	roundConstants := hexToElement[*fr.Element](strs.RoundConstants)
 
 	// mds matrix
-	mdsMatrix := make([][]*ff.Element, len(strs.Mds))
+	mdsMatrix := make([][]*fr.Element, len(strs.Mds))
 	for i := 0; i < len(strs.Mds); i++ {
-		mdsMatrix[i] = hexToElement[*ff.Element](strs.Mds[i])
+		mdsMatrix[i] = hexToElement[*fr.Element](strs.Mds[i])
 	}
 
 	// pre-sparse matrix
-	preSparseMatrix := make([][]*ff.Element, len(strs.PreSparse))
+	preSparseMatrix := make([][]*fr.Element, len(strs.PreSparse))
 	for i := 0; i < len(strs.PreSparse); i++ {
-		preSparseMatrix[i] = hexToElement[*ff.Element](strs.PreSparse[i])
+		preSparseMatrix[i] = hexToElement[*fr.Element](strs.PreSparse[i])
 	}
 
 	// sparse matrix
-	sparseMatrix := make([][][]*ff.Element, len(strs.Sparse))
+	sparseMatrix := make([][][]*fr.Element, len(strs.Sparse))
 	for i := 0; i < len(strs.Sparse); i++ {
-		sparseMatrix[i] = make([][]*ff.Element, len(strs.Sparse[i]))
+		sparseMatrix[i] = make([][]*fr.Element, len(strs.Sparse[i]))
 		for j := 0; j < len(strs.Sparse[i]); j++ {
-			sparseMatrix[i][j] = hexToElement[*ff.Element](strs.Sparse[i][j])
+			sparseMatrix[i][j] = hexToElement[*fr.Element](strs.Sparse[i][j])
 		}
 	}
 
@@ -107,7 +107,7 @@ var strs = [][]string{
 
 func TestPoseidonHash(t *testing.T) {
 	for i := 0; i < len(strs); i++ {
-		cons, _ := GenPoseidonConstants[*ff.Element](len(strs[i])+1, 1, 1, 0, 0, nil)
+		cons, _ := GenPoseidonConstants[*fr.Element](len(strs[i])+1, 1, 1, 0, 0, nil)
 		input := hexToBig(strs[i])
 		h1, _ := Hash(input, cons, OptimizedStatic)
 		h2, _ := Hash(input, cons, OptimizedDynamic)
@@ -118,7 +118,7 @@ func TestPoseidonHash(t *testing.T) {
 }
 
 func TestPoseidonHashFixed(t *testing.T) {
-	cons, _ := GenPoseidonConstants[*ff.Element](3, 1, 1, 0, 0, nil)
+	cons, _ := GenPoseidonConstants[*fr.Element](3, 1, 1, 0, 0, nil)
 	input := []*big.Int{big.NewInt(0), big.NewInt(0)}
 	hash, _ := Hash(input, cons, OptimizedStatic)
 	expected, _ := new(big.Int).SetString("48fe0b1331196f6cdb33a7c6e5af61b76fd388e1ef1d3d418be5147f0e4613d4", 16)
@@ -126,7 +126,7 @@ func TestPoseidonHashFixed(t *testing.T) {
 }
 
 func benchmarkStatic(b *testing.B, str []string) {
-	cons, _ := GenPoseidonConstants[*ff.Element](len(str)+1, 1, 1, 0, 0, nil)
+	cons, _ := GenPoseidonConstants[*fr.Element](len(str)+1, 1, 1, 0, 0, nil)
 	input := hexToBig(str)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -146,7 +146,7 @@ func BenchmarkOptimizedStaticWith9Inputs(b *testing.B)  { benchmarkStatic(b, str
 func BenchmarkOptimizedStaticWith10Inputs(b *testing.B) { benchmarkStatic(b, strs[9]) }
 
 func benchmarkDynamic(b *testing.B, str []string) {
-	cons, _ := GenPoseidonConstants[*ff.Element](len(str)+1, 1, 1, 0, 0, nil)
+	cons, _ := GenPoseidonConstants[*fr.Element](len(str)+1, 1, 1, 0, 0, nil)
 	input := hexToBig(str)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -166,7 +166,7 @@ func BenchmarkOptimizedDynamicWith9Inputs(b *testing.B)  { benchmarkDynamic(b, s
 func BenchmarkOptimizedDynamicWith10Inputs(b *testing.B) { benchmarkDynamic(b, strs[9]) }
 
 func benchmarkCorrect(b *testing.B, str []string) {
-	cons, _ := GenPoseidonConstants[*ff.Element](len(str)+1, 1, 1, 0, 0, nil)
+	cons, _ := GenPoseidonConstants[*fr.Element](len(str)+1, 1, 1, 0, 0, nil)
 	input := hexToBig(str)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

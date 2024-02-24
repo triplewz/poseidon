@@ -3,13 +3,13 @@ package poseidon
 import (
 	"testing"
 
-	ff "github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
+	"github.com/consensys/gnark-crypto/ecc/bls12-381/fr"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMDS(t *testing.T) {
 	for i := 2; i < 50; i++ {
-		m := genMDS[*ff.Element](i)
+		m := genMDS[*fr.Element](i)
 		mds, err := deriveMatrices(m)
 		assert.NoError(t, err)
 
