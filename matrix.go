@@ -35,7 +35,7 @@ func ScalarMul[E Element[E]](scalar E, m Matrix[E]) Matrix[E] {
 	for i := 0; i < len(m); i++ {
 		res[i] = make([]E, len(m[i]))
 		for j := 0; j < len(m[i]); j++ {
-			res[i][j] = newElement[E]().Mul(scalar, m[i][j])
+			res[i][j] = NewElement[E]().Mul(scalar, m[i][j])
 		}
 	}
 
@@ -47,7 +47,7 @@ func ScalarVecMul[E Element[E]](scalar E, v Vector[E]) Vector[E] {
 	res := make([]E, len(v))
 
 	for i := 0; i < len(v); i++ {
-		res[i] = newElement[E]().Mul(scalar, v[i])
+		res[i] = NewElement[E]().Mul(scalar, v[i])
 	}
 
 	return res
@@ -60,7 +60,7 @@ func VecAdd[E Element[E]](a, b Vector[E]) (Vector[E], error) {
 
 	res := make([]E, len(a))
 	for i := 0; i < len(a); i++ {
-		res[i] = newElement[E]().Add(a[i], b[i])
+		res[i] = NewElement[E]().Add(a[i], b[i])
 	}
 
 	return res, nil
@@ -73,7 +73,7 @@ func VecSub[E Element[E]](a, b Vector[E]) (Vector[E], error) {
 
 	res := make([]E, len(a))
 	for i := 0; i < len(a); i++ {
-		res[i] = newElement[E]().Sub(a[i], b[i])
+		res[i] = NewElement[E]().Sub(a[i], b[i])
 	}
 
 	return res, nil
@@ -81,13 +81,13 @@ func VecSub[E Element[E]](a, b Vector[E]) (Vector[E], error) {
 
 // compute the product between two vectors.
 func VecMul[E Element[E]](a, b Vector[E]) (E, error) {
-	res := newElement[E]()
+	res := NewElement[E]()
 	if len(a) != len(b) {
 		return res, errors.New("length err: cannot compute vector mul!")
 	}
 
 	for i := 0; i < len(a); i++ {
-		tmp := newElement[E]().Mul(a[i], b[i])
+		tmp := NewElement[E]().Mul(a[i], b[i])
 		res.Add(res, tmp)
 	}
 
@@ -329,7 +329,7 @@ func findNonZero[E Element[E]](m Matrix[E], index int) (pivot E, pivotIndex int,
 	pivotIndex = -1
 
 	if index > column(m) {
-		return newElement[E](), -1, errors.New("index out of range!")
+		return NewElement[E](), -1, errors.New("index out of range!")
 	}
 
 	for i := 0; i < row(m); i++ {
@@ -350,7 +350,7 @@ func eliminate[E Element[E]](m, shadow Matrix[E], columnIndex int) (Matrix[E], M
 		return nil, nil, fmt.Errorf("cannot find non-zero element: %w", err)
 	}
 
-	pivotInv := newElement[E]().Inverse(pivot)
+	pivotInv := NewElement[E]().Inverse(pivot)
 
 	for i := 0; i < row(m); i++ {
 		if i == pivotIndex {
@@ -358,7 +358,7 @@ func eliminate[E Element[E]](m, shadow Matrix[E], columnIndex int) (Matrix[E], M
 		}
 
 		if m[i][columnIndex].Cmp(zero[E]()) != 0 {
-			factor := newElement[E]().Mul(m[i][columnIndex], pivotInv)
+			factor := NewElement[E]().Mul(m[i][columnIndex], pivotInv)
 
 			scalarPivot := ScalarVecMul(factor, m[pivotIndex])
 
@@ -489,7 +489,7 @@ func reduceToIdentity[E Element[E]](m, shadow Matrix[E]) (Matrix[E], Matrix[E], 
 			return nil, nil, errors.New("cannot compute the result!")
 		}
 
-		factorInv := newElement[E]().Inverse(factor)
+		factorInv := NewElement[E]().Inverse(factor)
 
 		norm := ScalarVecMul(factorInv, m[indexi])
 

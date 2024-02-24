@@ -9,7 +9,7 @@ func hexToElement[E Element[E]](hex []string) []E {
 	elementArray := make([]E, len(hex))
 
 	for i := 0; i < len(hex); i++ {
-		elementArray[i] = newElement[E]()
+		elementArray[i] = NewElement[E]()
 		b, ok := new(big.Int).SetString(hex[i], 16)
 		if !ok {
 			panic("Element.SetString failed -> can't parse number in base16 into a big.Int")
@@ -25,7 +25,7 @@ func bigToElement[E Element[E]](big []*big.Int) []E {
 	elementArray := make([]E, len(big))
 
 	for i := 0; i < len(big); i++ {
-		elementArray[i] = newElement[E]()
+		elementArray[i] = NewElement[E]()
 		elementArray[i].SetBigInt(big[i])
 	}
 

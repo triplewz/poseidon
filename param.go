@@ -167,7 +167,7 @@ func genRoundConstants[E Element[E]](field, sbox int, fieldsize, t, rf, rp int) 
 			bufBigint := new(big.Int).SetBytes(buf)
 			// Skip all buffers that would result in invalid field elements.
 			if IsValid[E](bufBigint) {
-				roundConsts[i] = newElement[E]().SetBytes(buf)
+				roundConsts[i] = NewElement[E]().SetBytes(buf)
 				break
 			}
 		}

@@ -24,7 +24,7 @@ type Element[E any] interface {
 	Cmp(x E) int
 }
 
-func newElement[E Element[E]]() E {
+func NewElement[E Element[E]]() E {
 	typ := reflect.TypeOf((*E)(nil)).Elem()
 	val := reflect.New(typ.Elem())
 	return val.Interface().(E)
@@ -36,16 +36,16 @@ func isNil[E Element[E]](t E) bool {
 }
 
 func zero[E Element[E]]() E {
-	return newElement[E]().SetZero()
+	return NewElement[E]().SetZero()
 }
 
 func one[E Element[E]]() E {
-	return newElement[E]().SetOne()
+	return NewElement[E]().SetOne()
 }
 
 func Modulus[E Element[E]]() *big.Int {
-	e := newElement[E]().SetZero()
-	e.Sub(e, newElement[E]().SetOne())
+	e := NewElement[E]().SetZero()
+	e.Sub(e, NewElement[E]().SetOne())
 	b := e.BigInt(new(big.Int))
 	return b.Add(b, big.NewInt(1))
 }

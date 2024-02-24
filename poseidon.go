@@ -39,7 +39,7 @@ func Hash[E Element[E]](input []*big.Int, pdsContants *PoseidonConst[E], hash Ha
 	state := bigToElement[E](input)
 
 	// Neptune (a Rust implementation of Poseidon) is using domain tag 0x3 by default.
-	domain_tag, err := newElement[E]().SetString("3")
+	domain_tag, err := NewElement[E]().SetString("3")
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,7 @@ func sbox[E Element[E]](e E, pre, post *E) {
 		e.Add(e, *pre)
 	}
 
-	x := newElement[E]().Set(e)
+	x := NewElement[E]().Set(e)
 	Exp(e, x, PoseidonExp)
 
 	// if post is not nil, add round constants after computing the sbox.
@@ -349,9 +349,9 @@ func productMdsMatrix[E Element[E]](state []E, mds Matrix[E]) []E {
 
 	var res []E
 	for j := 0; j < len(state); j++ {
-		tmp1 := newElement[E]()
+		tmp1 := NewElement[E]()
 		for i := 0; i < len(state); i++ {
-			tmp2 := newElement[E]().Mul(state[i], mds[i][j])
+			tmp2 := NewElement[E]().Mul(state[i], mds[i][j])
 			tmp1.Add(tmp1, tmp2)
 		}
 		res = append(res, tmp1)
@@ -372,9 +372,9 @@ func productPreSparseMatrix[E Element[E]](state []E, preSparseMatrix Matrix[E]) 
 
 	var res []E
 	for j := 0; j < len(state); j++ {
-		tmp1 := newElement[E]()
+		tmp1 := NewElement[E]()
 		for i := 0; i < len(state); i++ {
-			tmp2 := newElement[E]().Mul(state[i], preSparseMatrix[i][j])
+			tmp2 := NewElement[E]().Mul(state[i], preSparseMatrix[i][j])
 			tmp1.Add(tmp1, tmp2)
 		}
 		res = append(res, tmp1)
@@ -399,15 +399,15 @@ func productSparseMatrix[E Element[E]](state []E, offset int, sparse []*SparseMa
 	// then for 1 <= i < t,
 	// compute ret[i] = state[0] * V[i-1] + state[i].
 	res := make([]E, len(state))
-	res[0] = newElement[E]()
+	res[0] = NewElement[E]()
 	for i := 0; i < len(state); i++ {
-		tmp := newElement[E]().Mul(state[i], sparse[offset].WHat[i])
+		tmp := NewElement[E]().Mul(state[i], sparse[offset].WHat[i])
 		res[0].Add(res[0], tmp)
 	}
 
 	for i := 1; i < len(state); i++ {
-		tmp := newElement[E]().Mul(state[0], sparse[offset].V[i-1])
-		res[i] = newElement[E]().Add(state[i], tmp)
+		tmp := NewElement[E]().Mul(state[0], sparse[offset].V[i-1])
+		res[i] = NewElement[E]().Add(state[i], tmp)
 	}
 
 	return res

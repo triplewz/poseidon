@@ -53,15 +53,15 @@ regen:
 	// there are no duplicates in the x vector or y vector, so that
 	// the determinant is always non-zero.
 	for i := 0; i < t; i++ {
-		xVec[i] = newElement[E]().SetUint64(uint64(i))
-		yVec[i] = newElement[E]().SetUint64(uint64(i + t))
+		xVec[i] = NewElement[E]().SetUint64(uint64(i))
+		yVec[i] = NewElement[E]().SetUint64(uint64(i + t))
 	}
 
 	m := make([][]E, t)
 	for i := 0; i < t; i++ {
 		m[i] = make([]E, t)
 		for j := 0; j < t; j++ {
-			m[i][j] = newElement[E]().Add(xVec[i], yVec[j])
+			m[i][j] = NewElement[E]().Add(xVec[i], yVec[j])
 			m[i][j].Inverse(m[i][j])
 		}
 	}
