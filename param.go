@@ -9,10 +9,6 @@ import (
 // security level (in bits)
 const SecurityLevel int = 128
 
-// for bls12_381 modular p, since p ≠ 1 mod 5, we set Alpha = 5.
-// see https://eprint.iacr.org/2019/458.pdf page 6.
-const Alpha int = 5
-
 // we refer the rust implement and supplementary material shown in the paper to generate the round numbers.
 // see https://extgit.iaik.tugraz.at/krypto/hadeshash.
 func calcRoundNumbers[E Element[E]](t int, securityMargin bool) (rf, rp int) {

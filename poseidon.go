@@ -63,16 +63,19 @@ func Hash[E Element[E]](input []*big.Int, pdsContants *PoseidonConst[E], hash Ha
 }
 
 // generate poseidon constants used in the poseidon hash.
-func GenPoseidonConstants[E Element[E]](width, field, sbox int, roundUpRp bool, mds Matrix[E]) (*PoseidonConst[E], error) {
+func GenPoseidonConstants[E Element[E]](width, field, sbox, rf, rp int, mds Matrix[E]) (*PoseidonConst[E], error) {
 	// round numbers.
-	rf, rp := calcRoundNumbers[E](width, true)
+	rfn, rpn := calcRoundNumbers[E](width, true)
+	if rf == 0 {
+		rf = rfn
+	}
+	if rp == 0 {
+		rp = rpn
+	}
 	if rf%2 != 0 {
 		return nil, fmt.Errorf("full rounds should be even")
 	}
 	half := rf / 2
-	if roundUpRp {
-		rp = (rp + width - 1) / width * width
-	}
 
 	constants := genRoundConstants[E](field, sbox, Bits[E](), width, rf, rp)
 
