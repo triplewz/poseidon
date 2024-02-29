@@ -218,7 +218,7 @@ func sbox[E Element[E]](e E, pre, post *E) {
 	}
 }
 
-// staticPartialRounds computes arc->sbox->m, which has partial sbox layers,
+// staticPartialRounds computes arc->sbox->M, which has partial sbox layers,
 // see https://eprint.iacr.org/2019/458.pdf page 6.
 // The partial round is the same as the full round, with the difference
 // that we apply the S-Box only to the first element.
@@ -231,7 +231,7 @@ func staticPartialRounds[E Element[E]](state []E, offset int, pdsConsts *Poseido
 	return state
 }
 
-// staticFullRounds computes arc->sbox->m, which has full sbox layers,
+// staticFullRounds computes arc->sbox->M, which has full sbox layers,
 // see https://eprint.iacr.org/2019/458.pdf page 6.
 func staticFullRounds[E Element[E]](state []E, lastRound bool, offset int, pdsConsts *PoseidonConst[E]) []E {
 	// in the last round, there is no need to add round constants because
@@ -249,7 +249,7 @@ func staticFullRounds[E Element[E]](state []E, lastRound bool, offset int, pdsCo
 	}
 
 	// in the fourth full round, we should compute the product between the elements
-	// and the pre-sparse matrix (m*m'), see https://eprint.iacr.org/2019/458.pdf page 20.
+	// and the pre-sparse matrix (M*M'), see https://eprint.iacr.org/2019/458.pdf page 20.
 	if offset == 4*len(state) {
 		state = productPreSparseMatrix(state, pdsConsts.PreSparse)
 	} else {
@@ -289,7 +289,7 @@ func dynamicFullRounds[E Element[E]](state []E, current, next bool, offset int, 
 			copy(postVec, pdsContants.RoundConsts[offset:offset+t])
 		}
 
-		// m^-1(s)
+		// M^-1(s)
 		inv, err := RightMatMul(postVec, pdsContants.Mds.mInv)
 		if err != nil {
 			panic(err)
@@ -386,18 +386,18 @@ func productPreSparseMatrix[E Element[E]](state []E, preSparseMatrix Matrix[E]) 
 // productSparseMatrix computes the product between the elements and the sparse matrix.
 func productSparseMatrix[E Element[E]](state []E, offset int, sparse []*SparseMatrix[E]) []E {
 	// this part is described in https://eprint.iacr.org/2019/458.pdf page 20.
-	// the sparse matrix m'' consists of:
+	// the sparse matrix M'' consists of:
 	//
-	// M_00  |  V
+	// M_00  |  v
 	// w_hat |  I
 	//
 	// where M_00 is the first element of the mds matrix,
-	// w_hat and V are t-1 length vectors,
+	// w_hat and v are t-1 length vectors,
 	// I is the (t-1)*(t-1) identity matrix.
-	// to compute ret = state * m'',
+	// to compute ret = state * M'',
 	// we can first compute ret[0] = state * [M_00, w_hat],
 	// then for 1 <= i < t,
-	// compute ret[i] = state[0] * V[i-1] + state[i].
+	// compute ret[i] = state[0] * v[i-1] + state[i].
 	res := make([]E, len(state))
 	res[0] = NewElement[E]()
 	for i := 0; i < len(state); i++ {

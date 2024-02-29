@@ -22,20 +22,20 @@ type mdsMatrices[E Element[E]] struct {
 	mPrime Matrix[E]
 	// mDoublePrime is the matrix m'' in the paper, and it holds m = m'*m''.
 	// mDoublePrime consists of:
-	// m_00  |  V
+	// m_00  |  v
 	// w_hat |  I
 	// where M_00 is the first element of the mds matrix,
-	// w_hat and V are t-1 length vectors,
+	// w_hat and v are t-1 length vectors,
 	// I is the (t-1)*(t-1) identity matrix.
 	mDoublePrime Matrix[E]
 }
 
-// SparseMatrix is specifically one of the form of m”.
+// SparseMatrix is specifically one of the form of m''.
 // This means its first row and column are each dense, and the interior matrix
 // (minor to the element in both the row and column) is the identity.
-// For simplicity, we omit the identity matrix in m”.
+// For simplicity, we omit the identity matrix in m''.
 type SparseMatrix[E Element[E]] struct {
-	// WHat is the first column of the m'' matrix, this is a little different with the WHat in the paper because
+	// WHat is the first column of the M'' matrix, this is a little different with the WHat in the paper because
 	// we add M_00 to the beginning of the WHat.
 	WHat Vector[E]
 	// V contains all but the first element, because it is already included in WHat.
@@ -108,7 +108,7 @@ func deriveMatrices[E Element[E]](m Matrix[E]) (*mdsMatrices[E], error) {
 	return &mdsMatrices[E]{m, mInv, mHat, mHatInv, mPrime, mDoublePrime}, nil
 }
 
-// generate the matrix m', where m = m'*m”.
+// generate the matrix m', where m = m'*m''.
 func genPrime[E Element[E]](m Matrix[E]) Matrix[E] {
 	prime := make([][]E, row(m))
 	prime[0] = append(prime[0], one[E]())
@@ -126,7 +126,7 @@ func genPrime[E Element[E]](m Matrix[E]) Matrix[E] {
 	return prime
 }
 
-// generate the matrix m”, where m = m'*m”.
+// generate the matrix m'', where m = m'*m''.
 func genDoublePrime[E Element[E]](m, mHatInv Matrix[E]) (Matrix[E], error) {
 	w, v := genPreVectors(m)
 
@@ -195,8 +195,8 @@ func parseSparseMatrix[E Element[E]](m Matrix[E]) (*SparseMatrix[E], error) {
 // we refer to the paper https://eprint.iacr.org/2019/458.pdf page 20 and
 // the implementation in https://github.com/filecoin-project/neptune.
 // at each partial round, use a sparse matrix instead of a dense matrix.
-// to do this, we have to factored into two components, such that m' x m” = m,
-// use the sparse matrix m” as the mds matrix,
+// to do this, we have to factored into two components, such that m' x m'' = m,
+// use the sparse matrix m'' as the mds matrix,
 // then the previous layer's m is replaced by m x m' = m*.
 // from the last partial round, do the same work to the first partial round.
 func genSparseMatrix[E Element[E]](m Matrix[E], rp int) ([]*SparseMatrix[E], Matrix[E], error) {

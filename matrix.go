@@ -163,7 +163,7 @@ func MatMul[E Element[E]](a, b Matrix[E]) (Matrix[E], error) {
 	return res, nil
 }
 
-// left Matrix multiplication, denote by m*V, where m is the matrix, and V is the vector.
+// left Matrix multiplication, denote by M*V, where M is the matrix, and V is the vector.
 func LeftMatMul[E Element[E]](m Matrix[E], v Vector[E]) (Vector[E], error) {
 	if !IsSquareMatrix(m) {
 		panic("matrix is not square!")
@@ -185,7 +185,7 @@ func LeftMatMul[E Element[E]](m Matrix[E], v Vector[E]) (Vector[E], error) {
 	return res, nil
 }
 
-// right Matrix multiplication, denote by V*m, where V is the vector, and m is the matrix.
+// right Matrix multiplication, denote by V*M, where V is the vector, and M is the matrix.
 func RightMatMul[E Element[E]](v Vector[E], m Matrix[E]) (Vector[E], error) {
 	if !IsSquareMatrix(m) {
 		return nil, errors.New("matrix is not square")
