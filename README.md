@@ -27,14 +27,14 @@ func main() {
 
 	// generate round constants for poseidon hash.
 	// width=len(input)+1.
-	cons, _ := GenPoseidonConstants(4)
+	cons, _ := GenPoseidonConstants[*fr.Element](4)
 
 	// use OptimizedStatic hash mode.
-	h1, _ := Hash(input, cons, OptimizedStatic)
+	h1, _ := Hash[*fr.Element](input, cons, OptimizedStatic)
 	// use OptimizedDynamic hash mode.
-	h2, _ := Hash(input, cons, OptimizedDynamic)
+	h2, _ := Hash[*fr.Element](input, cons, OptimizedDynamic)
 	// use Correct hash mode.
-	h3, _ := Hash(input, cons, Correct)
+	h3, _ := Hash[*fr.Element](input, cons, Correct)
 }
 ```
 # Benchmark

@@ -22,8 +22,5 @@ jobs:
       run: |
         go get -v -t -d ./...
 
-    - name: TestBlsCurve
-      run: go test -v ./bls12_381/... --bench=. -cover
-
     - name: TestBenchmark
       run: go test -v --bench=. -cover
